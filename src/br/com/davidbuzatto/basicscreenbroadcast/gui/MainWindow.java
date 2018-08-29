@@ -5,7 +5,7 @@
  */
 package br.com.davidbuzatto.basicscreenbroadcast.gui;
 
-import br.com.davidbuzatto.basicscreenbroadcast.gui.pojos.BroadcastArea;
+import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +59,7 @@ public class MainWindow extends javax.swing.JFrame {
         pnlBroascastAreaDefinitions = new javax.swing.JPanel();
         sclBroadcastAreaDefinitions = new javax.swing.JScrollPane();
         lstBroadcastAreaDefinitions = new javax.swing.JList<>();
-        btnAddBroadcastArea = new javax.swing.JButton();
+        btnEditBroadcastAreas = new javax.swing.JButton();
         btnSaveBroadcastAreas = new javax.swing.JButton();
         btnLoadBroadcastAreas = new javax.swing.JButton();
         btnServerStart = new javax.swing.JButton();
@@ -166,13 +166,13 @@ public class MainWindow extends javax.swing.JFrame {
         lstBroadcastAreaDefinitions.setEnabled(false);
         sclBroadcastAreaDefinitions.setViewportView(lstBroadcastAreaDefinitions);
 
-        btnAddBroadcastArea.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/pencil.png"))); // NOI18N
-        btnAddBroadcastArea.setMnemonic('E');
-        btnAddBroadcastArea.setText("Edit");
-        btnAddBroadcastArea.setEnabled(false);
-        btnAddBroadcastArea.addActionListener(new java.awt.event.ActionListener() {
+        btnEditBroadcastAreas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/pencil.png"))); // NOI18N
+        btnEditBroadcastAreas.setMnemonic('E');
+        btnEditBroadcastAreas.setText("Edit");
+        btnEditBroadcastAreas.setEnabled(false);
+        btnEditBroadcastAreas.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAddBroadcastAreaActionPerformed(evt);
+                btnEditBroadcastAreasActionPerformed(evt);
             }
         });
 
@@ -206,7 +206,7 @@ public class MainWindow extends javax.swing.JFrame {
                     .addComponent(sclBroadcastAreaDefinitions)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlBroascastAreaDefinitionsLayout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnAddBroadcastArea)
+                        .addComponent(btnEditBroadcastAreas)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnLoadBroadcastAreas)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -220,7 +220,7 @@ public class MainWindow extends javax.swing.JFrame {
                 .addComponent(sclBroadcastAreaDefinitions, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnAddBroadcastArea)
+                    .addComponent(btnEditBroadcastAreas)
                     .addComponent(btnSaveBroadcastAreas)
                     .addComponent(btnLoadBroadcastAreas))
                 .addContainerGap())
@@ -353,24 +353,26 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void radioFullScreenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioFullScreenActionPerformed
         lstBroadcastAreaDefinitions.setEnabled( false );
-        btnAddBroadcastArea.setEnabled( false );
+        btnEditBroadcastAreas.setEnabled( false );
         btnLoadBroadcastAreas.setEnabled( false );
         btnSaveBroadcastAreas.setEnabled( false );
     }//GEN-LAST:event_radioFullScreenActionPerformed
 
     private void radioCustomizedBroadscastAreasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioCustomizedBroadscastAreasActionPerformed
         lstBroadcastAreaDefinitions.setEnabled( true );
-        btnAddBroadcastArea.setEnabled( true );
+        btnEditBroadcastAreas.setEnabled( true );
         btnLoadBroadcastAreas.setEnabled( true );
         btnSaveBroadcastAreas.setEnabled( true );
     }//GEN-LAST:event_radioCustomizedBroadscastAreasActionPerformed
 
-    private void btnAddBroadcastAreaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddBroadcastAreaActionPerformed
+    private void btnEditBroadcastAreasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditBroadcastAreasActionPerformed
+        
+        setVisible( false );
         
         BroadcastAreaSelectDialog d = new BroadcastAreaSelectDialog( this, true );
         d.setVisible( true );
         
-    }//GEN-LAST:event_btnAddBroadcastAreaActionPerformed
+    }//GEN-LAST:event_btnEditBroadcastAreasActionPerformed
 
     private void btnLoadBroadcastAreasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadBroadcastAreasActionPerformed
         // TODO add your handling code here:
@@ -380,16 +382,16 @@ public class MainWindow extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnSaveBroadcastAreasActionPerformed
 
-    public void addBroadcastArea( Rectangle rect ) {
-        lstBroadcastAreaDefinitionsModel.addElement( new BroadcastArea( rect ) );
+    public void addBroadcastArea( BroadcastArea area ) {
+        lstBroadcastAreaDefinitionsModel.addElement( area );
     }
     
-    public List<Rectangle> getRectsFromBroadcastAreas() {
+    public List<BroadcastArea> getBroadcastAreas() {
         
-        List<Rectangle> areas = new ArrayList<>();
+        List<BroadcastArea> areas = new ArrayList<>();
         
         for ( int i = 0; i < lstBroadcastAreaDefinitionsModel.size(); i++ ) {
-            areas.add( lstBroadcastAreaDefinitionsModel.get( i ).getRectangle() );
+            areas.add( lstBroadcastAreaDefinitionsModel.get( i ) );
         }
         
         return areas;
@@ -436,9 +438,9 @@ public class MainWindow extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnAddBroadcastArea;
     private javax.swing.JButton btnClientConnect;
     private javax.swing.JButton btnClientDisconnect;
+    private javax.swing.JButton btnEditBroadcastAreas;
     private javax.swing.ButtonGroup btnGroup;
     private javax.swing.JButton btnLoadBroadcastAreas;
     private javax.swing.JButton btnSaveBroadcastAreas;

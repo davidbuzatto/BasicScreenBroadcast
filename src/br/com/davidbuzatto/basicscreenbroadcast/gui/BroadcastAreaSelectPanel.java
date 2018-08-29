@@ -5,23 +5,29 @@
  */
 package br.com.davidbuzatto.basicscreenbroadcast.gui;
 
-import br.com.davidbuzatto.basicscreenbroadcast.utils.Utils;
-import java.awt.BasicStroke;
+import static br.com.davidbuzatto.basicscreenbroadcast.utils.Constants.*;
+import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
+import br.com.davidbuzatto.basicscreenbroadcast.gui.model.DrawRectangle;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 
 /**
@@ -30,61 +36,15 @@ import javax.swing.SwingUtilities;
  */
 public class BroadcastAreaSelectPanel extends JPanel {
     
-    private class DrawRectangle {
-        Rectangle rect;
-        Color borderColor;
-        Color fillColor;
-    }
+    private DrawRectangle selectedDrawRect;
+    private BroadcastArea selectedBroadcastArea;
     
-    private enum DragType {
-        E_RESIZE,
-        W_RESIZE,
-        N_RESIZE,
-        S_RESIZE,
-        NE_RESIZE,
-        NW_RESIZE,
-        SE_RESIZE,
-        SW_RESIZE,
-        MOVE,
-        NONE
-    }
+    private DrawRectangle draggedDrawRect;
+    private BroadcastArea draggedBroadcastArea;
+    private DragType dragType;
     
-    private static final Cursor CROSSHAIR_CURSOR = new Cursor( Cursor.CROSSHAIR_CURSOR );
-    private static final Cursor MOVE_CURSOR = new Cursor( Cursor.MOVE_CURSOR );
-    private static final Cursor E_RESIZE_CURSOR = new Cursor( Cursor.E_RESIZE_CURSOR );
-    private static final Cursor W_RESIZE_CURSOR = new Cursor( Cursor.W_RESIZE_CURSOR );
-    private static final Cursor N_RESIZE_CURSOR = new Cursor( Cursor.N_RESIZE_CURSOR );
-    private static final Cursor S_RESIZE_CURSOR = new Cursor( Cursor.S_RESIZE_CURSOR );
-    private static final Cursor NE_RESIZE_CURSOR = new Cursor( Cursor.NE_RESIZE_CURSOR );
-    private static final Cursor NW_RESIZE_CURSOR = new Cursor( Cursor.NW_RESIZE_CURSOR );
-    private static final Cursor SE_RESIZE_CURSOR = new Cursor( Cursor.SE_RESIZE_CURSOR );
-    private static final Cursor SW_RESIZE_CURSOR = new Cursor( Cursor.SW_RESIZE_CURSOR );
-    
-    private static final Color DEFAULT_COORD_LABEL_COLOR = 
-            Color.BLACK;
-    private static final Color DEFAULT_COORD_LABEL_BACKGOUND = 
-            new Color( 255, 255, 255, 100 );
-    
-    private static final Color DEFAULT_RECT_BORDER_COLOR = 
-            new Color( 0, 51, 102, 100 );
-    private static final Color DEFAULT_RECT_FILL_COLOR = 
-            new Color( 0, 102, 153, 100 );
-    
-    private static final Color SELECTED_RECT_BORDER_COLOR = 
-            new Color( 24, 130, 27, 100 );
-    private static final Color SELECTED_RECT_FILL_COLOR = 
-            new Color( 98, 200, 98, 100 );
-    
-    private static final Color DELETE_RECT_BORDER_COLOR = 
-            new Color( 200, 51, 102, 100 );
-    private static final Color DELETE_RECT_FILL_COLOR = 
-            new Color( 200, 102, 153, 100 );
-    
-    private List<DrawRectangle> selectedRectDrawList;
-    private List<Rectangle> selectedRectScreenList;
-    
-    private DrawRectangle selectedRectDraw;
-    private Rectangle selectedRectScreen;
+    private List<DrawRectangle> selectedDrawRectList;
+    private List<BroadcastArea> selectedBroadcastAreaList;
     
     private int xStart;
     private int yStart;
@@ -100,13 +60,10 @@ public class BroadcastAreaSelectPanel extends JPanel {
     private int xDiffScreen;
     private int yDiffScreen;
     
-    private BasicStroke stroke;
-    private Font font;
-    private FontMetrics fontMetrics;
-    
-    private DrawRectangle draggedRectDraw;
-    private Rectangle draggedRectScreen;
-    private DragType dragType;
+    private JPopupMenu popup;
+    private JMenuItem itemChangeName;
+    private JMenuItem itemRemove;
+    private int searchIndex;
     
     public BroadcastAreaSelectPanel() {
     
@@ -114,14 +71,71 @@ public class BroadcastAreaSelectPanel extends JPanel {
         setOpaque( false );
         setCursor( CROSSHAIR_CURSOR );
         
-        selectedRectDrawList = new ArrayList<>();
-        selectedRectScreenList = new ArrayList<>();
+        popup = new JPopupMenu();
+        itemChangeName = new JMenuItem( "Change Name" );
+        itemChangeName.setIcon( new ImageIcon( getClass().getResource( 
+                "/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/pencil.png" ) ) );
+        itemRemove = new JMenuItem( "Remove" );
+        itemRemove.setIcon( new ImageIcon( getClass().getResource( 
+                "/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/delete.png" ) ) );
         
-        stroke = new BasicStroke( 2 );
-        font = new Font( "SansSerif", Font.BOLD, 12 );
-        fontMetrics = Utils.createFontMetrics( font );
+        popup.add( itemChangeName );
+        popup.add( new JSeparator() );
+        popup.add( itemRemove );
+        
+        selectedDrawRectList = new ArrayList<>();
+        selectedBroadcastAreaList = new ArrayList<>();
         
         dragType = DragType.NONE;
+        
+        itemChangeName.addActionListener( new ActionListener() {
+            
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                
+                String name = JOptionPane.showInputDialog( "Whats the name new of the selected Broadcast Area?" );
+                if ( name == null || name.trim().isEmpty() ) {
+                    name = "empty";
+                }
+
+                name = name.trim();
+                selectedDrawRectList.get( searchIndex ).setName( name );
+                selectedBroadcastAreaList.get( searchIndex ).setName( name );
+                
+                selectedDrawRectList.get( searchIndex ).setBorderColor( DEFAULT_RECT_BORDER_COLOR );
+                selectedDrawRectList.get( searchIndex ).setFillColor( DEFAULT_RECT_FILL_COLOR );
+                
+                repaint();
+                
+            }
+            
+        });
+        
+        itemRemove.addActionListener( new ActionListener() {
+            
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                
+                if ( JOptionPane.showConfirmDialog( 
+                        null, 
+                        "Do you really want to remove this Broadcast Area?", 
+                        "Remove Broadcast Area", 
+                        JOptionPane.YES_NO_OPTION ) == JOptionPane.YES_OPTION ) {
+
+                    selectedDrawRectList.remove( searchIndex );
+                    selectedBroadcastAreaList.remove( searchIndex );
+
+                } else {
+                    selectedDrawRectList.get( searchIndex ).setBorderColor( DEFAULT_RECT_BORDER_COLOR );
+                    selectedDrawRectList.get( searchIndex ).setFillColor( DEFAULT_RECT_FILL_COLOR );
+                }
+                
+                repaint();
+                
+            }
+            
+        });
+        
         
         addMouseListener( new MouseAdapter() {
             
@@ -135,25 +149,25 @@ public class BroadcastAreaSelectPanel extends JPanel {
                     xStartScreen = e.getXOnScreen();
                     yStartScreen = e.getYOnScreen();
                     
-                    draggedRectDraw = null;
+                    draggedDrawRect = null;
                     
-                    for ( int i = selectedRectDrawList.size() - 1; i >= 0; i-- ) {
+                    for ( int i = selectedDrawRectList.size() - 1; i >= 0; i-- ) {
                         
-                        DrawRectangle r = selectedRectDrawList.get( i );
+                        DrawRectangle r = selectedDrawRectList.get( i );
                         
-                        if ( r.rect.contains( e.getPoint() ) ) {
+                        if ( r.getRectangle().contains( e.getPoint() ) ) {
                             
-                            draggedRectDraw = r;
-                            draggedRectScreen = selectedRectScreenList.get( i );
+                            draggedDrawRect = r;
+                            draggedBroadcastArea = selectedBroadcastAreaList.get( i );
                             
-                            draggedRectDraw.borderColor = SELECTED_RECT_BORDER_COLOR;
-                            draggedRectDraw.fillColor = SELECTED_RECT_FILL_COLOR;
+                            draggedDrawRect.setBorderColor( SELECTED_RECT_BORDER_COLOR );
+                            draggedDrawRect.setFillColor( SELECTED_RECT_FILL_COLOR );
                             
-                            xDiff = xStart - draggedRectDraw.rect.x;
-                            yDiff = yStart - draggedRectDraw.rect.y;
+                            xDiff = xStart - draggedDrawRect.getRectangle().x;
+                            yDiff = yStart - draggedDrawRect.getRectangle().y;
                             
-                            xDiffScreen = xStartScreen - draggedRectScreen.x;
-                            yDiffScreen = yStartScreen - draggedRectScreen.y;
+                            xDiffScreen = xStartScreen - draggedBroadcastArea.getRectangle().x;
+                            yDiffScreen = yStartScreen - draggedBroadcastArea.getRectangle().y;
                             
                             break;
                             
@@ -166,35 +180,22 @@ public class BroadcastAreaSelectPanel extends JPanel {
                 } else if ( SwingUtilities.isRightMouseButton( e ) ) {
                     
                     boolean found = false;
-                    int i = 0;
+                    searchIndex = 0;
                     
-                    for ( DrawRectangle r : selectedRectDrawList ) {
-                        if ( r.rect.contains( e.getPoint() ) ) {
-                            r.borderColor = DELETE_RECT_BORDER_COLOR;
-                            r.fillColor = DELETE_RECT_FILL_COLOR;
+                    for ( DrawRectangle r : selectedDrawRectList ) {
+                        if ( r.getRectangle().contains( e.getPoint() ) ) {
+                            r.setBorderColor( DELETE_RECT_BORDER_COLOR );
+                            r.setFillColor( DELETE_RECT_FILL_COLOR );
                             found = true;
                             break;
                         }
-                        i++;
+                        searchIndex++;
                     }
                     
                     repaint();
                     
                     if ( found ) {
-                        
-                        if ( JOptionPane.showConfirmDialog( 
-                                null, 
-                                "Do you really want to remove this Broadcast Area?", 
-                                "Remove Broadcast Area", 
-                                JOptionPane.YES_NO_OPTION ) == JOptionPane.YES_OPTION ) {
-                            
-                            selectedRectDrawList.remove( i );
-                            selectedRectScreenList.remove( i );
-                            
-                        } else {
-                            selectedRectDrawList.get( i ).borderColor = DEFAULT_RECT_BORDER_COLOR;
-                            selectedRectDrawList.get( i ).fillColor = DEFAULT_RECT_FILL_COLOR;
-                        }
+                        popup.show( (Component) e.getSource(), e.getXOnScreen(), e.getYOnScreen());
                     }
                     
                     repaint();
@@ -208,25 +209,47 @@ public class BroadcastAreaSelectPanel extends JPanel {
                 
                 if ( SwingUtilities.isLeftMouseButton( e ) ) {
                     
-                    if ( draggedRectDraw != null ) {
+                    if ( draggedDrawRect != null ) {
                         
-                        draggedRectDraw.borderColor = DEFAULT_RECT_BORDER_COLOR;
-                        draggedRectDraw.fillColor = DEFAULT_RECT_FILL_COLOR;
+                        draggedDrawRect.setBorderColor( DEFAULT_RECT_BORDER_COLOR );
+                        draggedDrawRect.setFillColor( DEFAULT_RECT_FILL_COLOR );
                         
-                        draggedRectDraw = null;
-                        draggedRectScreen = null;
+                        draggedDrawRect = null;
+                        draggedBroadcastArea = null;
                         
                         dragType = DragType.NONE;
                         
                     } else {
                         
-                        buildSelectedRects( e );
+                        if ( selectedDrawRect != null && 
+                                selectedDrawRect.getRectangle().width >= 50 && 
+                                selectedDrawRect.getRectangle().height >= 50 ) {
+                        
+                            buildSelectedRects( e );
 
-                        selectedRectDrawList.add( selectedRectDraw );
-                        selectedRectScreenList.add( selectedRectScreen );
+                            String name = JOptionPane.showInputDialog( "Whats the name of the created Broadcast Area?" );
+                            if ( name == null || name.trim().isEmpty() ) {
+                                name = "empty";
+                            }
+                            
+                            name = name.trim();
+                            selectedDrawRect.setName( name );
+                            selectedBroadcastArea.setName( name );
 
-                        selectedRectDraw = null;
-                        selectedRectScreen = null;
+                            selectedDrawRectList.add( selectedDrawRect );
+                            selectedBroadcastAreaList.add( selectedBroadcastArea );
+                            
+                        } else {
+                            
+                            JOptionPane.showMessageDialog( (JPanel) e.getSource(), 
+                                    "A Broadcast Area should have at least 50 "
+                                            + "pixels of with and height!", 
+                                    "ERROR", JOptionPane.ERROR_MESSAGE );
+                            
+                        }
+
+                        selectedDrawRect = null;
+                        selectedBroadcastArea = null;
                         
                     }
                     
@@ -238,27 +261,27 @@ public class BroadcastAreaSelectPanel extends JPanel {
             
         });
         
-        addMouseMotionListener(new MouseMotionAdapter() {
+        addMouseMotionListener( new MouseMotionAdapter() {
             
             @Override
             public void mouseDragged( MouseEvent e ) {
                 
                 if ( SwingUtilities.isLeftMouseButton( e ) ) {
                     
-                    if ( draggedRectDraw != null ) {
+                    if ( draggedDrawRect != null ) {
                         
-                        int xaDraw = draggedRectDraw.rect.x;
-                        int yaDraw = draggedRectDraw.rect.y;
-                        int xaScreen = draggedRectScreen.x;
-                        int yaScreen = draggedRectScreen.y;
+                        int xaDraw = draggedDrawRect.getRectangle().x;
+                        int yaDraw = draggedDrawRect.getRectangle().y;
+                        int xaScreen = draggedBroadcastArea.getRectangle().x;
+                        int yaScreen = draggedBroadcastArea.getRectangle().y;
                                 
                         switch ( dragType ) {
                             
                             case MOVE:
-                                draggedRectDraw.rect.x = e.getX() - xDiff;
-                                draggedRectDraw.rect.y = e.getY() - yDiff;
-                                draggedRectScreen.x = e.getXOnScreen() - xDiffScreen;
-                                draggedRectScreen.y = e.getYOnScreen() - yDiffScreen;
+                                draggedDrawRect.getRectangle().x = e.getX() - xDiff;
+                                draggedDrawRect.getRectangle().y = e.getY() - yDiff;
+                                draggedBroadcastArea.getRectangle().x = e.getXOnScreen() - xDiffScreen;
+                                draggedBroadcastArea.getRectangle().y = e.getYOnScreen() - yDiffScreen;
                                 break;
                                 
                             case E_RESIZE:
@@ -315,9 +338,9 @@ public class BroadcastAreaSelectPanel extends JPanel {
                 dragType = DragType.NONE;
                 Cursor cursor = CROSSHAIR_CURSOR;
                 
-                for ( int i = selectedRectDrawList.size() - 1; i >= 0; i-- ) {
+                for ( int i = selectedDrawRectList.size() - 1; i >= 0; i-- ) {
                         
-                    Rectangle r = selectedRectDrawList.get( i ).rect;   
+                    Rectangle r = selectedDrawRectList.get( i ).getRectangle();   
                     
                     if ( r.contains( e.getPoint() ) ) {
                         
@@ -376,20 +399,22 @@ public class BroadcastAreaSelectPanel extends JPanel {
         xEndScreen = e.getXOnScreen();
         yEndScreen = e.getYOnScreen();
 
-        selectedRectDraw = new DrawRectangle();
-        selectedRectDraw.rect = new Rectangle(
+        selectedDrawRect = new DrawRectangle();
+        selectedDrawRect.setRectangle( new Rectangle(
                 xStart < xEnd ? xStart : xEnd, 
                 yStart < yEnd ? yStart : yEnd, 
                 xStart < xEnd ? xEnd - xStart : xStart - xEnd, 
-                yStart < yEnd ? yEnd - yStart : yStart - yEnd );
-        selectedRectDraw.borderColor = DEFAULT_RECT_BORDER_COLOR;
-        selectedRectDraw.fillColor = DEFAULT_RECT_FILL_COLOR;
+                yStart < yEnd ? yEnd - yStart : yStart - yEnd ) );
+        selectedDrawRect.setBorderColor( DEFAULT_RECT_BORDER_COLOR );
+        selectedDrawRect.setFillColor( DEFAULT_RECT_FILL_COLOR );
 
-        selectedRectScreen = new Rectangle(
+        Rectangle selectedBroadcastAreaRect = new Rectangle(
                 xStartScreen < xEndScreen ? xStartScreen : xEndScreen, 
                 yStartScreen < yEndScreen ? yStartScreen : yEndScreen, 
                 xStartScreen < xEndScreen ? xEndScreen - xStartScreen : xStartScreen - xEndScreen, 
                 yStartScreen < yEndScreen ? yEndScreen - yStartScreen : yStartScreen - yEndScreen );
+        
+        selectedBroadcastArea = new BroadcastArea( "e", selectedBroadcastAreaRect );
         
     }
     
@@ -403,123 +428,81 @@ public class BroadcastAreaSelectPanel extends JPanel {
                 RenderingHints.KEY_ANTIALIASING, 
                 RenderingHints.VALUE_ANTIALIAS_ON );
         
-        if ( selectedRectDraw != null ) {
-            drawRect( g2d, selectedRectDraw );
+        if ( selectedDrawRect != null ) {
+            selectedDrawRect.draw( g2d );
         }
         
-        for ( DrawRectangle r : selectedRectDrawList ) {
-            drawRect( g2d, r );
+        for ( DrawRectangle r : selectedDrawRectList ) {
+            r.draw( g2d );
         }
         
         g2d.dispose();
         
     }
-
-    private void drawRect( Graphics2D g2d, DrawRectangle r ) {
-        
-        Rectangle rect = r.rect;
-        
-        g2d.setColor( r.fillColor );
-        g2d.fillRect( 
-                rect.x, 
-                rect.y, 
-                rect.width,
-                rect.height );
-
-        g2d.setColor( r.borderColor );
-        g2d.drawRect( 
-                rect.x, 
-                rect.y, 
-                rect.width - 1,
-                rect.height - 1 );
-        
-        
-        String startCoord = String.format( "[l: %d; t: %d]", rect.x, rect.y );
-        String endCoord = String.format( "[r: %d; b: %d]", rect.x + rect.width, rect.y + rect.height );
-        
-        
-        g2d.setColor( DEFAULT_COORD_LABEL_BACKGOUND );
-        
-        g2d.fillRoundRect( rect.x + 3, rect.y + 3, 
-                fontMetrics.stringWidth( startCoord ) + 7, 
-                fontMetrics.getHeight() + 2, 10, 10 );
-        
-        g2d.fillRoundRect( 
-                rect.x + rect.width - fontMetrics.stringWidth( endCoord ) - 11, 
-                rect.y + rect.height - fontMetrics.getHeight() - 6, 
-                fontMetrics.stringWidth( endCoord ) + 7, 
-                fontMetrics.getHeight() + 2, 10, 10 );
-        
-        g2d.setColor( DEFAULT_COORD_LABEL_COLOR );
-        g2d.setStroke( stroke );
-        g2d.setFont( font );
-        
-        g2d.drawString( startCoord, 
-                rect.x + 7, 
-                rect.y + fontMetrics.getHeight() );
-        
-        g2d.drawString( endCoord, 
-                rect.x + rect.width - fontMetrics.stringWidth( endCoord ) - 7, 
-                rect.y + rect.height - fontMetrics.getHeight() + 7 );
-        
+    
+    public List<BroadcastArea> getSelectedBroadcastAreaList() {
+        return selectedBroadcastAreaList;
     }
     
-    public List<Rectangle> getSelectedRectScreenList() {
-        return selectedRectScreenList;
-    }
-    
-    public void setSelectedRectScreenList( List<Rectangle> selectedRectScreenList, BroadcastAreaSelectDialog parentDialog ) {
+    public void setBroadcastAreaList( List<BroadcastArea> selectedBroadcastAreaList, BroadcastAreaSelectDialog parentDialog ) {
         
         int xOffset = parentDialog.getX();
         int yOffset = parentDialog.getY();
         
-        for ( Rectangle r : selectedRectScreenList ) {
+        for ( BroadcastArea r : selectedBroadcastAreaList ) {
             
-            Rectangle nr = new Rectangle();
+            BroadcastArea sba = (BroadcastArea) r.clone();
+            
             DrawRectangle dr = new DrawRectangle();
+            dr.setName( sba.getName() );
+            dr.setRectangle( new Rectangle( 
+                    r.getRectangle().x + xOffset, 
+                    r.getRectangle().y + yOffset, 
+                    r.getRectangle().width, 
+                    r.getRectangle().height ) );
+            dr.setBorderColor( DEFAULT_RECT_BORDER_COLOR );
+            dr.setFillColor( DEFAULT_RECT_FILL_COLOR );
             
-            nr = new Rectangle( r.x, r.y, r.width, r.height );
-            
-            dr.rect = new Rectangle( r.x + xOffset, r.y + yOffset, r.width, r.height );
-            dr.borderColor = DEFAULT_RECT_BORDER_COLOR;
-            dr.fillColor = DEFAULT_RECT_FILL_COLOR;
-            
-            this.selectedRectScreenList.add( nr );
-            this.selectedRectDrawList.add( dr );
+            this.selectedBroadcastAreaList.add( sba );
+            this.selectedDrawRectList.add( dr );
             
         }
         
     }
 
     private void resizeE( MouseEvent e ) {
-        if ( e.getX() - draggedRectDraw.rect.x > 20 ) {
-            draggedRectDraw.rect.width = e.getX() - draggedRectDraw.rect.x;
-            draggedRectScreen.width = e.getXOnScreen() - draggedRectScreen.x;
+        if ( e.getX() - draggedDrawRect.getRectangle().x > 50 ) {
+            draggedDrawRect.getRectangle().width = e.getX() - draggedDrawRect.getRectangle().x;
+            draggedBroadcastArea.getRectangle().width = 
+                    e.getXOnScreen() - draggedBroadcastArea.getRectangle().x;
         }
     }
     
     private void resizeW( MouseEvent e, int xaDraw, int xaScreen ) {
-        if ( draggedRectDraw.rect.x + draggedRectDraw.rect.width - e.getX() > 20 ) {
-            draggedRectDraw.rect.x = e.getX() - xDiff;
-            draggedRectDraw.rect.width += xaDraw - draggedRectDraw.rect.x;
-            draggedRectScreen.x = e.getXOnScreen()- xDiffScreen;
-            draggedRectScreen.width += xaScreen - draggedRectScreen.x;
+        if ( draggedDrawRect.getRectangle().x + draggedDrawRect.getRectangle().width - e.getX() > 50 ) {
+            draggedDrawRect.getRectangle().x = e.getX() - xDiff;
+            draggedDrawRect.getRectangle().width += xaDraw - draggedDrawRect.getRectangle().x;
+            draggedBroadcastArea.getRectangle().x = e.getXOnScreen()- xDiffScreen;
+            draggedBroadcastArea.getRectangle().width += 
+                    xaScreen - draggedBroadcastArea.getRectangle().x;
         }
     }
 
     private void resizeS( MouseEvent e ) {
-        if ( e.getY() - draggedRectDraw.rect.y > 20 ) {
-            draggedRectDraw.rect.height = e.getY() - draggedRectDraw.rect.y;
-            draggedRectScreen.height = e.getYOnScreen() - draggedRectScreen.y;
+        if ( e.getY() - draggedDrawRect.getRectangle().y > 50 ) {
+            draggedDrawRect.getRectangle().height = e.getY() - draggedDrawRect.getRectangle().y;
+            draggedBroadcastArea.getRectangle().height = 
+                    e.getYOnScreen() - draggedBroadcastArea.getRectangle().y;
         }
     }
     
     private void resizeN( MouseEvent e, int yaDraw, int yaScreen ) {
-        if ( draggedRectDraw.rect.y + draggedRectDraw.rect.height - e.getY() > 20 ) {
-            draggedRectDraw.rect.y = e.getY() - yDiff;
-            draggedRectDraw.rect.height += yaDraw - draggedRectDraw.rect.y;
-            draggedRectScreen.y = e.getYOnScreen()- yDiffScreen;
-            draggedRectScreen.height += yaScreen - draggedRectScreen.y;
+        if ( draggedDrawRect.getRectangle().y + draggedDrawRect.getRectangle().height - e.getY() > 50 ) {
+            draggedDrawRect.getRectangle().y = e.getY() - yDiff;
+            draggedDrawRect.getRectangle().height += yaDraw - draggedDrawRect.getRectangle().y;
+            draggedBroadcastArea.getRectangle().y = e.getYOnScreen()- yDiffScreen;
+            draggedBroadcastArea.getRectangle().height += 
+                    yaScreen - draggedBroadcastArea.getRectangle().y;
         }
     }
 

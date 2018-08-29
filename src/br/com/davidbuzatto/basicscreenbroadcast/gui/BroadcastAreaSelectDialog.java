@@ -5,15 +5,17 @@
  */
 package br.com.davidbuzatto.basicscreenbroadcast.gui;
 
+import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
 import java.awt.Color;
 import java.awt.GraphicsEnvironment;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
-import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.KeyStroke;
 
 /**
  *
@@ -22,6 +24,8 @@ import javax.swing.JDialog;
 public class BroadcastAreaSelectDialog extends javax.swing.JDialog {
 
     private MainWindow parent;
+    private KeyboardFocusManager focusManager;
+    private ApplicationKeyEventDispatcher appKeyDisp;
     
     /**
      * Creates new form BroadcastAreaSelectDialog
@@ -37,18 +41,27 @@ public class BroadcastAreaSelectDialog extends javax.swing.JDialog {
         setDefaultCloseOperation( DISPOSE_ON_CLOSE );
         setBounds( GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds() );
         
-        broadcastAreaSelectPanel.setSelectedRectScreenList( parent.getRectsFromBroadcastAreas(), this );
+        broadcastAreaSelectPanel.setBroadcastAreaList( parent.getBroadcastAreas(), this );
         
-        KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-        ApplicationKeyEventDispatcher disp = new ApplicationKeyEventDispatcher( this );
-        focusManager.addKeyEventDispatcher( disp );
+        // ENTER and ESC actions
+        getRootPane().getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put( 
+                KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ), "CANCEL" );
+        getRootPane().getActionMap().put( "CANCEL", new AbstractAction(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cancel();
+            }
+        });
+        getRootPane().setDefaultButton( btnOkBL );
+        
+        /*addKeyEventDispatcher();
         
         addWindowListener( new WindowAdapter() {
             @Override
             public void windowClosed( WindowEvent e ) {
-                focusManager.removeKeyEventDispatcher( disp );
+                removeKeyEventDispatcher();
             }
-        });
+        });*/
         
     }
 
@@ -87,7 +100,7 @@ public class BroadcastAreaSelectDialog extends javax.swing.JDialog {
                         case KeyEvent.VK_ENTER:
                             accept();
                             break;
-                            
+
                         case KeyEvent.VK_ESCAPE:
                             cancel();
                             break;
@@ -297,16 +310,28 @@ public class BroadcastAreaSelectDialog extends javax.swing.JDialog {
         
         parent.clearBroadcastAreas();
         
-        for ( Rectangle r : broadcastAreaSelectPanel.getSelectedRectScreenList() ) {
-            parent.addBroadcastArea( r );
+        for ( BroadcastArea ba : broadcastAreaSelectPanel.getSelectedBroadcastAreaList() ) {
+            parent.addBroadcastArea( ba );
         }
         
         dispose();
+        parent.setVisible( true );
         
     }
     
     private void cancel() {
         dispose();
+        parent.setVisible( true );
+    }
+    
+    public void addKeyEventDispatcher() {
+        focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        appKeyDisp = new ApplicationKeyEventDispatcher( this );
+        focusManager.addKeyEventDispatcher( appKeyDisp );
+    }
+    
+    public void removeKeyEventDispatcher() {
+        focusManager.removeKeyEventDispatcher( appKeyDisp );
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

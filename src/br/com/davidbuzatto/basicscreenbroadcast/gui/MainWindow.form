@@ -305,7 +305,7 @@
                               <Component id="sclBroadcastAreaDefinitions" max="32767" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                  <Component id="btnAddBroadcastArea" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btnEditBroadcastAreas" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="btnLoadBroadcastAreas" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -323,7 +323,7 @@
                           <Component id="sclBroadcastAreaDefinitions" pref="185" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="btnAddBroadcastArea" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="btnEditBroadcastAreas" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="btnSaveBroadcastAreas" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="btnLoadBroadcastAreas" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -354,7 +354,7 @@
                     </Component>
                   </SubComponents>
                 </Container>
-                <Component class="javax.swing.JButton" name="btnAddBroadcastArea">
+                <Component class="javax.swing.JButton" name="btnEditBroadcastAreas">
                   <Properties>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                       <Image iconType="3" name="/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/pencil.png"/>
@@ -364,7 +364,7 @@
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
                   <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAddBroadcastAreaActionPerformed"/>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnEditBroadcastAreasActionPerformed"/>
                   </Events>
                 </Component>
                 <Component class="javax.swing.JButton" name="btnSaveBroadcastAreas">
