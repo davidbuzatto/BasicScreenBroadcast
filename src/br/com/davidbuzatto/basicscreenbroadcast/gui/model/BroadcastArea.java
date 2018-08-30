@@ -6,12 +6,13 @@
 package br.com.davidbuzatto.basicscreenbroadcast.gui.model;
 
 import java.awt.Rectangle;
+import java.io.Serializable;
 
 /**
  *
  * @author David
  */
-public class BroadcastArea implements Cloneable {
+public class BroadcastArea implements Cloneable, Serializable {
     
     private String name;
     private Rectangle rectangle;
@@ -21,6 +22,7 @@ public class BroadcastArea implements Cloneable {
     }
 
     public BroadcastArea( String name, Rectangle rectangle ) {
+        this.name = name;
         this.rectangle = rectangle;
     }
 

@@ -9,6 +9,13 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -27,6 +34,43 @@ public class Utils {
         bi = null;
         
         return fm;
+        
+    }
+    
+    public static List<byte[]> bufferedImageListToByteArrayList( List<BufferedImage> imgs ) throws IOException {
+        
+        List<byte[]> imagesInBytes = new ArrayList<>();
+        
+        for ( BufferedImage img : imgs ) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write( img, "png", baos );
+            baos.flush();
+            imagesInBytes.add( baos.toByteArray() );
+            baos.close();
+        }
+        
+        return imagesInBytes;
+        
+    }
+    
+    public static byte[] bufferedImageToByteArray( BufferedImage img ) throws IOException {
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write( img, "png", baos );
+        baos.flush();
+        byte[] imageInBytes = baos.toByteArray();
+        baos.close();
+        
+        return imageInBytes;
+        
+    }
+    
+    public static BufferedImage byteArrayToBufferedImage( byte[] imgData ) throws IOException {
+        
+        InputStream in = new ByteArrayInputStream( imgData );
+        BufferedImage buffImg = ImageIO.read( in );
+        
+        return buffImg;
         
     }
 

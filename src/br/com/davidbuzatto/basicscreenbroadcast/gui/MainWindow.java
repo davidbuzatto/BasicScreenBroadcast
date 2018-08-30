@@ -5,11 +5,18 @@
  */
 package br.com.davidbuzatto.basicscreenbroadcast.gui;
 
+import br.com.davidbuzatto.basicscreenbroadcast.client.Client;
 import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
+import br.com.davidbuzatto.basicscreenbroadcast.server.Server;
+import java.awt.AWTException;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -18,17 +25,19 @@ import javax.swing.DefaultListModel;
 public class MainWindow extends javax.swing.JFrame {
 
     private DefaultListModel<BroadcastArea> lstBroadcastAreaDefinitionsModel;
-    
+    private Server server;
+    private Client client;
+
     /**
      * Creates new form MainWindow
      */
     public MainWindow() {
-        
+
         initComponents();
-        
+
         lstBroadcastAreaDefinitionsModel = new DefaultListModel<>();
         lstBroadcastAreaDefinitions.setModel( lstBroadcastAreaDefinitionsModel );
-        
+
     }
 
     /**
@@ -60,6 +69,7 @@ public class MainWindow extends javax.swing.JFrame {
         sclBroadcastAreaDefinitions = new javax.swing.JScrollPane();
         lstBroadcastAreaDefinitions = new javax.swing.JList<>();
         btnEditBroadcastAreas = new javax.swing.JButton();
+        btnClearBroadcastAreas = new javax.swing.JButton();
         btnSaveBroadcastAreas = new javax.swing.JButton();
         btnLoadBroadcastAreas = new javax.swing.JButton();
         btnServerStart = new javax.swing.JButton();
@@ -67,311 +77,451 @@ public class MainWindow extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Basic Screen Broadcast - By David Buzatto");
-        setResizable(false);
+        setIconImage(new ImageIcon( getClass().getResource( 
+            "/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/application_cascade.png" ) ).getImage());
+setResizable(false);
 
-        pnlClient.setBorder(javax.swing.BorderFactory.createTitledBorder("Client Configurations"));
-        pnlClient.setToolTipText("");
+pnlClient.setBorder(javax.swing.BorderFactory.createTitledBorder("Client Configurations"));
+pnlClient.setToolTipText("");
 
-        lblClientHost.setText("Host:");
+lblClientHost.setText("Host:");
 
-        txtClientHost.setText("localhost");
+txtClientHost.setText("localhost");
 
-        lblClientPort.setText("Port:");
+lblClientPort.setText("Port:");
 
-        txtClientPort.setText("8085");
+txtClientPort.setText("8085");
 
-        btnClientConnect.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/connect.png"))); // NOI18N
-        btnClientConnect.setMnemonic('C');
-        btnClientConnect.setText("Connect");
-        btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnClientConnectActionPerformed(evt);
-            }
-        });
+btnClientConnect.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/connect.png"))); // NOI18N
+btnClientConnect.setMnemonic('C');
+btnClientConnect.setText("Connect");
+btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
+    public void actionPerformed(java.awt.event.ActionEvent evt) {
+        btnClientConnectActionPerformed(evt);
+    }
+    });
 
-        btnClientDisconnect.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/disconnect.png"))); // NOI18N
-        btnClientDisconnect.setMnemonic('D');
-        btnClientDisconnect.setText("Disconnect");
-        btnClientDisconnect.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnClientDisconnectActionPerformed(evt);
-            }
-        });
+    btnClientDisconnect.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/disconnect.png"))); // NOI18N
+    btnClientDisconnect.setMnemonic('D');
+    btnClientDisconnect.setText("Disconnect");
+    btnClientDisconnect.setEnabled(false);
+    btnClientDisconnect.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnClientDisconnectActionPerformed(evt);
+        }
+    });
 
-        javax.swing.GroupLayout pnlClientLayout = new javax.swing.GroupLayout(pnlClient);
-        pnlClient.setLayout(pnlClientLayout);
-        pnlClientLayout.setHorizontalGroup(
-            pnlClientLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlClientLayout.createSequentialGroup()
-                .addContainerGap()
+    javax.swing.GroupLayout pnlClientLayout = new javax.swing.GroupLayout(pnlClient);
+    pnlClient.setLayout(pnlClientLayout);
+    pnlClientLayout.setHorizontalGroup(
+        pnlClientLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(pnlClientLayout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(lblClientHost)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(txtClientHost, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(lblClientPort)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(txtClientPort, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(btnClientConnect)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(btnClientDisconnect)
+            .addContainerGap(28, Short.MAX_VALUE))
+    );
+    pnlClientLayout.setVerticalGroup(
+        pnlClientLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(pnlClientLayout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(pnlClientLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(lblClientHost)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtClientHost, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtClientHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(lblClientPort)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtClientPort, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtClientPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(btnClientConnect)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnClientDisconnect)
-                .addContainerGap(28, Short.MAX_VALUE))
-        );
-        pnlClientLayout.setVerticalGroup(
-            pnlClientLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlClientLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlClientLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblClientHost)
-                    .addComponent(txtClientHost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblClientPort)
-                    .addComponent(txtClientPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnClientConnect)
-                    .addComponent(btnClientDisconnect))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                .addComponent(btnClientDisconnect))
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+    );
 
-        pnlServer.setBorder(javax.swing.BorderFactory.createTitledBorder("Server Configurations"));
+    pnlServer.setBorder(javax.swing.BorderFactory.createTitledBorder("Server Configurations"));
 
-        lblServerPort.setText("Port:");
+    lblServerPort.setText("Port:");
 
-        txtServerPort.setText("8085");
+    txtServerPort.setText("8085");
 
-        lblFPSGeneration.setText("FPS Generation:");
+    lblFPSGeneration.setText("FPS Generation:");
 
-        txtFPSGeneration.setText("30");
+    txtFPSGeneration.setText("30");
 
-        pnlScreenAreas.setBorder(javax.swing.BorderFactory.createTitledBorder("Screen Areas to Broadcast"));
+    pnlScreenAreas.setBorder(javax.swing.BorderFactory.createTitledBorder("Screen Areas to Broadcast"));
 
-        btnGroup.add(radioFullScreen);
-        radioFullScreen.setSelected(true);
-        radioFullScreen.setText("Full Screen");
-        radioFullScreen.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                radioFullScreenActionPerformed(evt);
-            }
-        });
+    btnGroup.add(radioFullScreen);
+    radioFullScreen.setSelected(true);
+    radioFullScreen.setText("Full Screen");
+    radioFullScreen.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            radioFullScreenActionPerformed(evt);
+        }
+    });
 
-        btnGroup.add(radioCustomizedBroadscastAreas);
-        radioCustomizedBroadscastAreas.setText("Customized Broadcast Areas");
-        radioCustomizedBroadscastAreas.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                radioCustomizedBroadscastAreasActionPerformed(evt);
-            }
-        });
+    btnGroup.add(radioCustomizedBroadscastAreas);
+    radioCustomizedBroadscastAreas.setText("Customized Broadcast Areas");
+    radioCustomizedBroadscastAreas.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            radioCustomizedBroadscastAreasActionPerformed(evt);
+        }
+    });
 
-        pnlBroascastAreaDefinitions.setBorder(javax.swing.BorderFactory.createTitledBorder("Broadcast Area Definitions"));
+    pnlBroascastAreaDefinitions.setBorder(javax.swing.BorderFactory.createTitledBorder("Broadcast Area Definitions"));
 
-        lstBroadcastAreaDefinitions.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        lstBroadcastAreaDefinitions.setEnabled(false);
-        sclBroadcastAreaDefinitions.setViewportView(lstBroadcastAreaDefinitions);
+    lstBroadcastAreaDefinitions.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+    lstBroadcastAreaDefinitions.setEnabled(false);
+    sclBroadcastAreaDefinitions.setViewportView(lstBroadcastAreaDefinitions);
 
-        btnEditBroadcastAreas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/pencil.png"))); // NOI18N
-        btnEditBroadcastAreas.setMnemonic('E');
-        btnEditBroadcastAreas.setText("Edit");
-        btnEditBroadcastAreas.setEnabled(false);
-        btnEditBroadcastAreas.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnEditBroadcastAreasActionPerformed(evt);
-            }
-        });
+    btnEditBroadcastAreas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/pencil.png"))); // NOI18N
+    btnEditBroadcastAreas.setMnemonic('E');
+    btnEditBroadcastAreas.setText("Edit");
+    btnEditBroadcastAreas.setEnabled(false);
+    btnEditBroadcastAreas.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnEditBroadcastAreasActionPerformed(evt);
+        }
+    });
 
-        btnSaveBroadcastAreas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/disk.png"))); // NOI18N
-        btnSaveBroadcastAreas.setMnemonic('S');
-        btnSaveBroadcastAreas.setText("Save");
-        btnSaveBroadcastAreas.setEnabled(false);
-        btnSaveBroadcastAreas.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSaveBroadcastAreasActionPerformed(evt);
-            }
-        });
+    btnClearBroadcastAreas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/delete.png"))); // NOI18N
+    btnClearBroadcastAreas.setText("Clear");
+    btnClearBroadcastAreas.setEnabled(false);
+    btnClearBroadcastAreas.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnClearBroadcastAreasActionPerformed(evt);
+        }
+    });
 
-        btnLoadBroadcastAreas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/folder_wrench.png"))); // NOI18N
-        btnLoadBroadcastAreas.setMnemonic('L');
-        btnLoadBroadcastAreas.setText("Load");
-        btnLoadBroadcastAreas.setEnabled(false);
-        btnLoadBroadcastAreas.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnLoadBroadcastAreasActionPerformed(evt);
-            }
-        });
+    btnSaveBroadcastAreas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/disk.png"))); // NOI18N
+    btnSaveBroadcastAreas.setMnemonic('S');
+    btnSaveBroadcastAreas.setText("Save");
+    btnSaveBroadcastAreas.setEnabled(false);
+    btnSaveBroadcastAreas.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnSaveBroadcastAreasActionPerformed(evt);
+        }
+    });
 
-        javax.swing.GroupLayout pnlBroascastAreaDefinitionsLayout = new javax.swing.GroupLayout(pnlBroascastAreaDefinitions);
-        pnlBroascastAreaDefinitions.setLayout(pnlBroascastAreaDefinitionsLayout);
-        pnlBroascastAreaDefinitionsLayout.setHorizontalGroup(
-            pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlBroascastAreaDefinitionsLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(sclBroadcastAreaDefinitions)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlBroascastAreaDefinitionsLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btnEditBroadcastAreas)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnLoadBroadcastAreas)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnSaveBroadcastAreas)))
-                .addContainerGap())
-        );
-        pnlBroascastAreaDefinitionsLayout.setVerticalGroup(
-            pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlBroascastAreaDefinitionsLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(sclBroadcastAreaDefinitions, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+    btnLoadBroadcastAreas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/folder_wrench.png"))); // NOI18N
+    btnLoadBroadcastAreas.setMnemonic('L');
+    btnLoadBroadcastAreas.setText("Load");
+    btnLoadBroadcastAreas.setEnabled(false);
+    btnLoadBroadcastAreas.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnLoadBroadcastAreasActionPerformed(evt);
+        }
+    });
+
+    javax.swing.GroupLayout pnlBroascastAreaDefinitionsLayout = new javax.swing.GroupLayout(pnlBroascastAreaDefinitions);
+    pnlBroascastAreaDefinitions.setLayout(pnlBroascastAreaDefinitionsLayout);
+    pnlBroascastAreaDefinitionsLayout.setHorizontalGroup(
+        pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(pnlBroascastAreaDefinitionsLayout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(sclBroadcastAreaDefinitions, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlBroascastAreaDefinitionsLayout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
                     .addComponent(btnEditBroadcastAreas)
-                    .addComponent(btnSaveBroadcastAreas)
-                    .addComponent(btnLoadBroadcastAreas))
-                .addContainerGap())
-        );
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(btnClearBroadcastAreas)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(btnLoadBroadcastAreas)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(btnSaveBroadcastAreas)))
+            .addContainerGap())
+    );
+    pnlBroascastAreaDefinitionsLayout.setVerticalGroup(
+        pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(pnlBroascastAreaDefinitionsLayout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(sclBroadcastAreaDefinitions, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(btnEditBroadcastAreas)
+                .addComponent(btnSaveBroadcastAreas)
+                .addComponent(btnLoadBroadcastAreas)
+                .addComponent(btnClearBroadcastAreas))
+            .addContainerGap())
+    );
 
-        javax.swing.GroupLayout pnlScreenAreasLayout = new javax.swing.GroupLayout(pnlScreenAreas);
-        pnlScreenAreas.setLayout(pnlScreenAreasLayout);
-        pnlScreenAreasLayout.setHorizontalGroup(
-            pnlScreenAreasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlScreenAreasLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlScreenAreasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnlBroascastAreaDefinitions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(pnlScreenAreasLayout.createSequentialGroup()
-                        .addComponent(radioFullScreen)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(radioCustomizedBroadscastAreas)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        pnlScreenAreasLayout.setVerticalGroup(
-            pnlScreenAreasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlScreenAreasLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlScreenAreasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(radioFullScreen)
-                    .addComponent(radioCustomizedBroadscastAreas))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+    javax.swing.GroupLayout pnlScreenAreasLayout = new javax.swing.GroupLayout(pnlScreenAreas);
+    pnlScreenAreas.setLayout(pnlScreenAreasLayout);
+    pnlScreenAreasLayout.setHorizontalGroup(
+        pnlScreenAreasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(pnlScreenAreasLayout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(pnlScreenAreasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(pnlBroascastAreaDefinitions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+                .addGroup(pnlScreenAreasLayout.createSequentialGroup()
+                    .addComponent(radioFullScreen)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(radioCustomizedBroadscastAreas)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+            .addContainerGap())
+    );
+    pnlScreenAreasLayout.setVerticalGroup(
+        pnlScreenAreasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(pnlScreenAreasLayout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(pnlScreenAreasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(radioFullScreen)
+                .addComponent(radioCustomizedBroadscastAreas))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(pnlBroascastAreaDefinitions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addContainerGap())
+    );
 
-        btnServerStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/transmit_go.png"))); // NOI18N
-        btnServerStart.setMnemonic('a');
-        btnServerStart.setText("Start");
-        btnServerStart.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnServerStartActionPerformed(evt);
-            }
-        });
+    btnServerStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/transmit_go.png"))); // NOI18N
+    btnServerStart.setMnemonic('a');
+    btnServerStart.setText("Start");
+    btnServerStart.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnServerStartActionPerformed(evt);
+        }
+    });
 
-        btnServerStop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/transmit_delete.png"))); // NOI18N
-        btnServerStop.setMnemonic('o');
-        btnServerStop.setText("Stop");
-        btnServerStop.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnServerStopActionPerformed(evt);
-            }
-        });
+    btnServerStop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/transmit_delete.png"))); // NOI18N
+    btnServerStop.setMnemonic('o');
+    btnServerStop.setText("Stop");
+    btnServerStop.setEnabled(false);
+    btnServerStop.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnServerStopActionPerformed(evt);
+        }
+    });
 
-        javax.swing.GroupLayout pnlServerLayout = new javax.swing.GroupLayout(pnlServer);
-        pnlServer.setLayout(pnlServerLayout);
-        pnlServerLayout.setHorizontalGroup(
-            pnlServerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlServerLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlServerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnlScreenAreas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(pnlServerLayout.createSequentialGroup()
-                        .addComponent(lblServerPort)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblFPSGeneration)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtFPSGeneration, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnServerStart)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnServerStop)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        pnlServerLayout.setVerticalGroup(
-            pnlServerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlServerLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlServerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblServerPort)
-                    .addComponent(txtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblFPSGeneration)
-                    .addComponent(txtFPSGeneration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnServerStart)
-                    .addComponent(btnServerStop))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+    javax.swing.GroupLayout pnlServerLayout = new javax.swing.GroupLayout(pnlServer);
+    pnlServer.setLayout(pnlServerLayout);
+    pnlServerLayout.setHorizontalGroup(
+        pnlServerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(pnlServerLayout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(pnlServerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(pnlScreenAreas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+                .addGroup(pnlServerLayout.createSequentialGroup()
+                    .addComponent(lblServerPort)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(txtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(lblFPSGeneration)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(txtFPSGeneration, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(btnServerStart)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(btnServerStop)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+            .addContainerGap())
+    );
+    pnlServerLayout.setVerticalGroup(
+        pnlServerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(pnlServerLayout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(pnlServerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(lblServerPort)
+                .addComponent(txtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(lblFPSGeneration)
+                .addComponent(txtFPSGeneration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnServerStart)
+                .addComponent(btnServerStop))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(pnlScreenAreas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addContainerGap())
+    );
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnlClient, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(pnlServer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(pnlClient, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pnlServer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+    javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+    getContentPane().setLayout(layout);
+    layout.setHorizontalGroup(
+        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(layout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(pnlClient, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(pnlServer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addContainerGap())
+    );
+    layout.setVerticalGroup(
+        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(layout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(pnlClient, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(pnlServer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addContainerGap())
+    );
 
-        pack();
-        setLocationRelativeTo(null);
+    pack();
+    setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnClientConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClientConnectActionPerformed
-        // TODO add your handling code here:
+
+        try {
+
+            int port = Integer.parseInt( txtClientPort.getText() );
+
+            if ( port < 1 || port > 65535 ) {
+                throw new FieldFormatException( "Port should be in the interval [1; 65535]." );
+            }
+
+            client = new Client( txtClientHost.getText(), port );
+            client.start();
+
+            btnClientConnect.setEnabled( false );
+            btnClientDisconnect.setEnabled( true );
+
+        } catch ( IOException exc ) {
+            System.err.println( "Server problem." );
+            System.err.println( exc.getMessage() );
+        } catch ( NumberFormatException exc ) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Client port should be an integer!",
+                    "ERROR", JOptionPane.ERROR_MESSAGE );
+        } catch ( FieldFormatException exc ) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    exc.getMessage(),
+                    "ERROR", JOptionPane.ERROR_MESSAGE );
+        }
+
     }//GEN-LAST:event_btnClientConnectActionPerformed
 
     private void btnClientDisconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClientDisconnectActionPerformed
-        // TODO add your handling code here:
+
+        if ( client != null ) {
+            try {
+                client.stop();
+            } catch ( IOException exc ) {
+                System.err.println( "Stop client problem." );
+                System.err.println( exc.getMessage() );
+            } finally {
+                btnClientConnect.setEnabled( true );
+                btnClientDisconnect.setEnabled( false );
+            }
+        }
+
     }//GEN-LAST:event_btnClientDisconnectActionPerformed
 
     private void btnServerStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnServerStartActionPerformed
-        // TODO add your handling code here:
+
+        boolean shouldStart = true;
+
+        try {
+
+            int port = Integer.parseInt( txtServerPort.getText() );
+            int fps = Integer.parseInt( txtFPSGeneration.getText() );
+
+            if ( port < 1 || port > 65535 ) {
+                throw new FieldFormatException( "Port should be in the interval [1; 65535]." );
+            }
+
+            if ( fps < 1 || fps > 60 ) {
+                throw new FieldFormatException( "FPS should be in the interval [1; 60]." );
+            }
+
+            List<BroadcastArea> startList = new ArrayList<>();
+
+            if ( radioFullScreen.isSelected() ) {
+
+                /*BroadcastArea b = new BroadcastArea( "Full Screen",
+                        new Rectangle( 300, 300 ) );*/
+                BroadcastArea b = new BroadcastArea( "Full Screen", 
+                        new Rectangle( Toolkit.getDefaultToolkit().getScreenSize() ) );
+               
+                startList.add( b );
+
+            } else {
+
+                if ( !lstBroadcastAreaDefinitionsModel.isEmpty() ) {
+                    for ( int i = 0; i < lstBroadcastAreaDefinitionsModel.size(); i++ ) {
+                        startList.add( lstBroadcastAreaDefinitionsModel.get( i ) );
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "You should define at least one Broadcast Area!",
+                            "ERROR", JOptionPane.ERROR_MESSAGE );
+                    shouldStart = false;
+                }
+
+            }
+
+            if ( shouldStart ) {
+                server = new Server( port, fps, startList );
+                server.start();
+                btnServerStart.setEnabled( false );
+                btnServerStop.setEnabled( true );
+                radioFullScreen.setEnabled( false );
+                radioCustomizedBroadscastAreas.setEnabled( false );
+                enableScreenAreas( false );
+            }
+
+        } catch ( AWTException exc ) {
+            System.err.println( "Can't create Robot." );
+            System.err.println( exc.getMessage() );
+        } catch ( IOException exc ) {
+            System.err.println( "Server problem." );
+            System.err.println( exc.getMessage() );
+        } catch ( NumberFormatException exc ) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Server port and FPS should be integers!",
+                    "ERROR", JOptionPane.ERROR_MESSAGE );
+        } catch ( FieldFormatException exc ) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    exc.getMessage(),
+                    "ERROR", JOptionPane.ERROR_MESSAGE );
+        }
+
     }//GEN-LAST:event_btnServerStartActionPerformed
 
     private void btnServerStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnServerStopActionPerformed
-        // TODO add your handling code here:
+
+        if ( server != null ) {
+            try {
+                server.stop();
+            } catch ( IOException exc ) {
+                System.err.println( "Stop Server problem." );
+                System.err.println( exc.getMessage() );
+            } finally {
+                btnServerStart.setEnabled( true );
+                btnServerStop.setEnabled( false );
+                radioFullScreen.setEnabled( true );
+                radioCustomizedBroadscastAreas.setEnabled( true );
+                if ( radioFullScreen.isSelected() ) {
+                    enableScreenAreas( false );
+                } else {
+                    enableScreenAreas( true );
+                }
+            }
+        }
+
     }//GEN-LAST:event_btnServerStopActionPerformed
 
     private void radioFullScreenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioFullScreenActionPerformed
-        lstBroadcastAreaDefinitions.setEnabled( false );
-        btnEditBroadcastAreas.setEnabled( false );
-        btnLoadBroadcastAreas.setEnabled( false );
-        btnSaveBroadcastAreas.setEnabled( false );
+        enableScreenAreas( false );
     }//GEN-LAST:event_radioFullScreenActionPerformed
 
     private void radioCustomizedBroadscastAreasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioCustomizedBroadscastAreasActionPerformed
-        lstBroadcastAreaDefinitions.setEnabled( true );
-        btnEditBroadcastAreas.setEnabled( true );
-        btnLoadBroadcastAreas.setEnabled( true );
-        btnSaveBroadcastAreas.setEnabled( true );
+        enableScreenAreas( true );
     }//GEN-LAST:event_radioCustomizedBroadscastAreasActionPerformed
 
     private void btnEditBroadcastAreasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditBroadcastAreasActionPerformed
-        
-        setVisible( false );
-        
+
+        setExtendedState( ICONIFIED );
+
         BroadcastAreaSelectDialog d = new BroadcastAreaSelectDialog( this, true );
         d.setVisible( true );
-        
+
     }//GEN-LAST:event_btnEditBroadcastAreasActionPerformed
 
     private void btnLoadBroadcastAreasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadBroadcastAreasActionPerformed
@@ -382,26 +532,57 @@ public class MainWindow extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnSaveBroadcastAreasActionPerformed
 
+    private void btnClearBroadcastAreasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearBroadcastAreasActionPerformed
+
+        if ( lstBroadcastAreaDefinitionsModel.size() > 0 ) {
+
+            if ( JOptionPane.showConfirmDialog( this,
+                    "Do you really whant do clear the defined broadcast areas?",
+                    "Confirmation",
+                    JOptionPane.YES_NO_OPTION ) == JOptionPane.YES_OPTION ) {
+                lstBroadcastAreaDefinitionsModel.clear();
+            }
+
+        }
+
+    }//GEN-LAST:event_btnClearBroadcastAreasActionPerformed
+
     public void addBroadcastArea( BroadcastArea area ) {
         lstBroadcastAreaDefinitionsModel.addElement( area );
     }
-    
+
     public List<BroadcastArea> getBroadcastAreas() {
-        
+
         List<BroadcastArea> areas = new ArrayList<>();
-        
+
         for ( int i = 0; i < lstBroadcastAreaDefinitionsModel.size(); i++ ) {
             areas.add( lstBroadcastAreaDefinitionsModel.get( i ) );
         }
-        
+
         return areas;
-        
+
     }
-    
+
     public void clearBroadcastAreas() {
         lstBroadcastAreaDefinitionsModel.clear();
     }
-    
+
+    private void enableScreenAreas( boolean enable ) {
+        lstBroadcastAreaDefinitions.setEnabled( enable );
+        btnEditBroadcastAreas.setEnabled( enable );
+        btnClearBroadcastAreas.setEnabled( enable );
+        btnLoadBroadcastAreas.setEnabled( enable );
+        btnSaveBroadcastAreas.setEnabled( enable );
+    }
+
+    private class FieldFormatException extends RuntimeException {
+
+        public FieldFormatException( String message ) {
+            super( message );
+        }
+
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -438,6 +619,7 @@ public class MainWindow extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnClearBroadcastAreas;
     private javax.swing.JButton btnClientConnect;
     private javax.swing.JButton btnClientDisconnect;
     private javax.swing.JButton btnEditBroadcastAreas;

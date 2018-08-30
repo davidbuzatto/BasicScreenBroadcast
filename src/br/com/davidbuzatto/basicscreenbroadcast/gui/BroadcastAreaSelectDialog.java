@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.KeyStroke;
 
 /**
@@ -315,13 +316,13 @@ public class BroadcastAreaSelectDialog extends javax.swing.JDialog {
         }
         
         dispose();
-        parent.setVisible( true );
+        parent.setExtendedState( JFrame.NORMAL );
         
     }
     
     private void cancel() {
         dispose();
-        parent.setVisible( true );
+        parent.setExtendedState( JFrame.NORMAL );
     }
     
     public void addKeyEventDispatcher() {
