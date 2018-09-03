@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.davidbuzatto.basicscreenbroadcast.gui.model;
+package br.com.davidbuzatto.basicscreenbroadcast.legacy;
 
+import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.IOException;

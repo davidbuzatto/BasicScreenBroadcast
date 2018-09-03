@@ -6,6 +6,7 @@
 package br.com.davidbuzatto.basicscreenbroadcast.gui;
 
 import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
@@ -38,21 +39,38 @@ public class ImageWindow extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        popup = new javax.swing.JPopupMenu();
+        itemMinimize = new javax.swing.JMenuItem();
         imagePanel = new br.com.davidbuzatto.basicscreenbroadcast.gui.ImagePanel();
+
+        popup.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+
+        itemMinimize.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/application_put.png"))); // NOI18N
+        itemMinimize.setText("Minimize");
+        itemMinimize.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemMinimizeActionPerformed(evt);
+            }
+        });
+        popup.add(itemMinimize);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setCursor(new java.awt.Cursor(java.awt.Cursor.MOVE_CURSOR));
         setIconImage(new ImageIcon( getClass().getResource( 
             "/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/application_view_tile.png" ) ).getImage());
 setResizable(false);
-addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+
+imagePanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
     public void mouseDragged(java.awt.event.MouseEvent evt) {
-        formMouseDragged(evt);
+        imagePanelMouseDragged(evt);
     }
     });
-    addMouseListener(new java.awt.event.MouseAdapter() {
+    imagePanel.addMouseListener(new java.awt.event.MouseAdapter() {
+        public void mouseClicked(java.awt.event.MouseEvent evt) {
+            imagePanelMouseClicked(evt);
+        }
         public void mousePressed(java.awt.event.MouseEvent evt) {
-            formMousePressed(evt);
+            imagePanelMousePressed(evt);
         }
     });
 
@@ -81,24 +99,32 @@ addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
     setBounds(0, 0, 516, 139);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void formMouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseDragged
+    private void imagePanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_imagePanelMouseClicked
+        
+        if ( SwingUtilities.isRightMouseButton( evt ) ) {
+            popup.show( (Component) evt.getSource(), evt.getX(), evt.getY() );
+        }
+        
+    }//GEN-LAST:event_imagePanelMouseClicked
+
+    private void itemMinimizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemMinimizeActionPerformed
+        setExtendedState( ICONIFIED );
+    }//GEN-LAST:event_itemMinimizeActionPerformed
+
+    private void imagePanelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_imagePanelMousePressed
+        
+        xDiff = evt.getX();
+        yDiff = evt.getY();
+        
+    }//GEN-LAST:event_imagePanelMousePressed
+
+    private void imagePanelMouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_imagePanelMouseDragged
         
         if ( SwingUtilities.isLeftMouseButton( evt ) ) {
             setLocation( evt.getXOnScreen() - xDiff, evt.getYOnScreen() - yDiff );
         }
         
-    }//GEN-LAST:event_formMouseDragged
-
-    private void formMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMousePressed
-        
-        xDiff = evt.getX();
-        yDiff = evt.getY();
-        
-        if ( SwingUtilities.isRightMouseButton( evt ) ) {
-            setExtendedState( ICONIFIED );
-        }
-        
-    }//GEN-LAST:event_formMousePressed
+    }//GEN-LAST:event_imagePanelMouseDragged
 
     public void setBroadcastArea( BroadcastArea broadcastArea ) {
         this.broadcastArea = broadcastArea;
@@ -123,5 +149,7 @@ addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private br.com.davidbuzatto.basicscreenbroadcast.gui.ImagePanel imagePanel;
+    private javax.swing.JMenuItem itemMinimize;
+    private javax.swing.JPopupMenu popup;
     // End of variables declaration//GEN-END:variables
 }

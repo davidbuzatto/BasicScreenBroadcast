@@ -131,7 +131,7 @@ public class DrawRectangle implements Cloneable {
             c.fillColor = fillColor;
             
         } catch ( CloneNotSupportedException exc ) {
-            System.out.println( "Clone not supported in " + getClass().getName() );
+            System.err.println( "Clone not supported in " + getClass().getName() );
         }
 
         return c;

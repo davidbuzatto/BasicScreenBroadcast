@@ -48,6 +48,9 @@ public class Constants {
     public static final Color DELETE_RECT_FILL_COLOR = 
             new Color( 200, 102, 153, 100 );
     
+    public static final Color OK_OUTPUT_MESSAGE_COLOR = 
+            new Color( 0, 102, 51 );
+    
     public static final BasicStroke DRAW_RECT_STROKE = new BasicStroke( 2 );
     public static final Font DRAW_RECT_FONT = new Font( "SansSerif", Font.BOLD, 12 );
     public static final FontMetrics DRAW_RECT_FONT_METRICS = Utils.createFontMetrics( DRAW_RECT_FONT );

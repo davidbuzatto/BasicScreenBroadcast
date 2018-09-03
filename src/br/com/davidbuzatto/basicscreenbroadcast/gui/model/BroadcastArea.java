@@ -64,7 +64,7 @@ public class BroadcastArea implements Cloneable, Serializable {
             c.name = name;
             
         } catch ( CloneNotSupportedException exc ) {
-            System.out.println( "Clone not supported in " + getClass().getName() );
+            System.err.println( "Clone not supported in " + getClass().getName() );
         }
         
         return c;
@@ -75,7 +75,7 @@ public class BroadcastArea implements Cloneable, Serializable {
     public String toString() {
         return String.format( 
                 "<html><font color='%s'>%s - left: %d; top: %d; right: %d; bottom: %d | Area: %d</font></html>",
-                getArea() >= 2500 ? "#A8D7FF" : "#FFA8A8",
+                getArea() >= 2500 ? "#006699" : "#FF0000",
                 name,
                 rectangle.x, 
                 rectangle.y, 

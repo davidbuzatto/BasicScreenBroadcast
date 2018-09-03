@@ -8,7 +8,10 @@ package br.com.davidbuzatto.basicscreenbroadcast.gui;
 import br.com.davidbuzatto.basicscreenbroadcast.client.Client;
 import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
 import br.com.davidbuzatto.basicscreenbroadcast.server.Server;
+import br.com.davidbuzatto.basicscreenbroadcast.utils.Utils;
 import java.awt.AWTException;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.io.IOException;
@@ -17,6 +20,8 @@ import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 
 /**
  *
@@ -50,6 +55,8 @@ public class MainWindow extends javax.swing.JFrame {
     private void initComponents() {
 
         btnGroup = new javax.swing.ButtonGroup();
+        popUpOutputAndErrors = new javax.swing.JPopupMenu();
+        itemClearOutputAndErrors = new javax.swing.JMenuItem();
         pnlClient = new javax.swing.JPanel();
         lblClientHost = new javax.swing.JLabel();
         txtClientHost = new javax.swing.JTextField();
@@ -74,6 +81,18 @@ public class MainWindow extends javax.swing.JFrame {
         btnLoadBroadcastAreas = new javax.swing.JButton();
         btnServerStart = new javax.swing.JButton();
         btnServerStop = new javax.swing.JButton();
+        pnlOutputAndErrors = new javax.swing.JPanel();
+        sclOuputAndErrors = new javax.swing.JScrollPane();
+        txtPaneOutputAndErrors = new javax.swing.JTextPane();
+
+        itemClearOutputAndErrors.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/bin_empty.png"))); // NOI18N
+        itemClearOutputAndErrors.setText("Clear");
+        itemClearOutputAndErrors.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemClearOutputAndErrorsActionPerformed(evt);
+            }
+        });
+        popUpOutputAndErrors.add(itemClearOutputAndErrors);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Basic Screen Broadcast - By David Buzatto");
@@ -175,6 +194,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
 
     pnlBroascastAreaDefinitions.setBorder(javax.swing.BorderFactory.createTitledBorder("Broadcast Area Definitions"));
 
+    lstBroadcastAreaDefinitions.setBackground(new java.awt.Color(255, 255, 255));
     lstBroadcastAreaDefinitions.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
     lstBroadcastAreaDefinitions.setEnabled(false);
     sclBroadcastAreaDefinitions.setViewportView(lstBroadcastAreaDefinitions);
@@ -241,7 +261,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
         pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(pnlBroascastAreaDefinitionsLayout.createSequentialGroup()
             .addContainerGap()
-            .addComponent(sclBroadcastAreaDefinitions, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+            .addComponent(sclBroadcastAreaDefinitions, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addGroup(pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(btnEditBroadcastAreas)
@@ -336,6 +356,35 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
             .addContainerGap())
     );
 
+    pnlOutputAndErrors.setBorder(javax.swing.BorderFactory.createTitledBorder("Output and Errors"));
+
+    txtPaneOutputAndErrors.setEditable(false);
+    txtPaneOutputAndErrors.setBackground(new java.awt.Color(255, 255, 255));
+    txtPaneOutputAndErrors.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
+    txtPaneOutputAndErrors.addMouseListener(new java.awt.event.MouseAdapter() {
+        public void mouseClicked(java.awt.event.MouseEvent evt) {
+            txtPaneOutputAndErrorsMouseClicked(evt);
+        }
+    });
+    sclOuputAndErrors.setViewportView(txtPaneOutputAndErrors);
+
+    javax.swing.GroupLayout pnlOutputAndErrorsLayout = new javax.swing.GroupLayout(pnlOutputAndErrors);
+    pnlOutputAndErrors.setLayout(pnlOutputAndErrorsLayout);
+    pnlOutputAndErrorsLayout.setHorizontalGroup(
+        pnlOutputAndErrorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(pnlOutputAndErrorsLayout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(sclOuputAndErrors)
+            .addContainerGap())
+    );
+    pnlOutputAndErrorsLayout.setVerticalGroup(
+        pnlOutputAndErrorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(pnlOutputAndErrorsLayout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(sclOuputAndErrors, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+            .addContainerGap())
+    );
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -344,7 +393,8 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
             .addContainerGap()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(pnlClient, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(pnlServer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(pnlServer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(pnlOutputAndErrors, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addContainerGap())
     );
     layout.setVerticalGroup(
@@ -353,7 +403,9 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
             .addContainerGap()
             .addComponent(pnlClient, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(pnlServer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(pnlServer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(pnlOutputAndErrors, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addContainerGap())
     );
 
@@ -371,15 +423,16 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
                 throw new FieldFormatException( "Port should be in the interval [1; 65535]." );
             }
 
-            client = new Client( txtClientHost.getText(), port );
+            client = new Client( txtClientHost.getText(), port, this );
             client.start();
 
             btnClientConnect.setEnabled( false );
             btnClientDisconnect.setEnabled( true );
 
         } catch ( IOException exc ) {
-            System.err.println( "Server problem." );
-            System.err.println( exc.getMessage() );
+            Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                    "--- I/O Exception ---\n", Color.RED );
+            Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
         } catch ( NumberFormatException exc ) {
             JOptionPane.showMessageDialog(
                     this,
@@ -400,8 +453,9 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
             try {
                 client.stop();
             } catch ( IOException exc ) {
-                System.err.println( "Stop client problem." );
-                System.err.println( exc.getMessage() );
+                Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                        "--- Problem in Client Disconnection ---\n", Color.RED );
+                Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
             } finally {
                 btnClientConnect.setEnabled( true );
                 btnClientDisconnect.setEnabled( false );
@@ -455,7 +509,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
             }
 
             if ( shouldStart ) {
-                server = new Server( port, fps, startList );
+                server = new Server( port, fps, this, startList );
                 server.start();
                 btnServerStart.setEnabled( false );
                 btnServerStop.setEnabled( true );
@@ -465,11 +519,13 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
             }
 
         } catch ( AWTException exc ) {
-            System.err.println( "Can't create Robot." );
-            System.err.println( exc.getMessage() );
+            Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                    "--- Can't create Robot ---\n", Color.RED );
+                Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
         } catch ( IOException exc ) {
-            System.err.println( "Server problem." );
-            System.err.println( exc.getMessage() );
+            Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                    "--- I/O Exception ---\n", Color.RED );
+            Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
         } catch ( NumberFormatException exc ) {
             JOptionPane.showMessageDialog(
                     this,
@@ -490,8 +546,9 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
             try {
                 server.stop();
             } catch ( IOException exc ) {
-                System.err.println( "Stop Server problem." );
-                System.err.println( exc.getMessage() );
+                Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                        "--- Problem in Server Stop ---\n", Color.RED );
+                 Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
             } finally {
                 btnServerStart.setEnabled( true );
                 btnServerStop.setEnabled( false );
@@ -547,6 +604,22 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
 
     }//GEN-LAST:event_btnClearBroadcastAreasActionPerformed
 
+    private void txtPaneOutputAndErrorsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_txtPaneOutputAndErrorsMouseClicked
+        
+        if ( SwingUtilities.isRightMouseButton( evt ) ) {
+            
+            popUpOutputAndErrors.show( (Component) evt.getSource(), evt.getX(), evt.getY());
+            
+        }
+        
+    }//GEN-LAST:event_txtPaneOutputAndErrorsMouseClicked
+
+    private void itemClearOutputAndErrorsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemClearOutputAndErrorsActionPerformed
+        
+        txtPaneOutputAndErrors.setText( "" );
+        
+    }//GEN-LAST:event_itemClearOutputAndErrorsActionPerformed
+
     public void addBroadcastArea( BroadcastArea area ) {
         lstBroadcastAreaDefinitionsModel.addElement( area );
     }
@@ -583,39 +656,8 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
 
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main( String args[] ) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for ( javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels() ) {
-                if ( "Nimbus".equals( info.getName() ) ) {
-                    javax.swing.UIManager.setLookAndFeel( info.getClassName() );
-                    break;
-                }
-            }
-        } catch ( ClassNotFoundException ex ) {
-            java.util.logging.Logger.getLogger( MainWindow.class.getName() ).log( java.util.logging.Level.SEVERE, null, ex );
-        } catch ( InstantiationException ex ) {
-            java.util.logging.Logger.getLogger( MainWindow.class.getName() ).log( java.util.logging.Level.SEVERE, null, ex );
-        } catch ( IllegalAccessException ex ) {
-            java.util.logging.Logger.getLogger( MainWindow.class.getName() ).log( java.util.logging.Level.SEVERE, null, ex );
-        } catch ( javax.swing.UnsupportedLookAndFeelException ex ) {
-            java.util.logging.Logger.getLogger( MainWindow.class.getName() ).log( java.util.logging.Level.SEVERE, null, ex );
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater( new Runnable() {
-            public void run() {
-                new MainWindow().setVisible( true );
-            }
-        } );
+    public JTextPane getTxtPaneOutputAndError() {
+        return txtPaneOutputAndErrors;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -628,6 +670,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
     private javax.swing.JButton btnSaveBroadcastAreas;
     private javax.swing.JButton btnServerStart;
     private javax.swing.JButton btnServerStop;
+    private javax.swing.JMenuItem itemClearOutputAndErrors;
     private javax.swing.JLabel lblClientHost;
     private javax.swing.JLabel lblClientPort;
     private javax.swing.JLabel lblFPSGeneration;
@@ -635,14 +678,18 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
     private javax.swing.JList<BroadcastArea> lstBroadcastAreaDefinitions;
     private javax.swing.JPanel pnlBroascastAreaDefinitions;
     private javax.swing.JPanel pnlClient;
+    private javax.swing.JPanel pnlOutputAndErrors;
     private javax.swing.JPanel pnlScreenAreas;
     private javax.swing.JPanel pnlServer;
+    private javax.swing.JPopupMenu popUpOutputAndErrors;
     private javax.swing.JRadioButton radioCustomizedBroadscastAreas;
     private javax.swing.JRadioButton radioFullScreen;
     private javax.swing.JScrollPane sclBroadcastAreaDefinitions;
+    private javax.swing.JScrollPane sclOuputAndErrors;
     private javax.swing.JTextField txtClientHost;
     private javax.swing.JTextField txtClientPort;
     private javax.swing.JTextField txtFPSGeneration;
+    private javax.swing.JTextPane txtPaneOutputAndErrors;
     private javax.swing.JTextField txtServerPort;
     // End of variables declaration//GEN-END:variables
 }

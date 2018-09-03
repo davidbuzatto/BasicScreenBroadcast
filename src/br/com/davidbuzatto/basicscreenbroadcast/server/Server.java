@@ -5,10 +5,13 @@
  */
 package br.com.davidbuzatto.basicscreenbroadcast.server;
 
+import br.com.davidbuzatto.basicscreenbroadcast.gui.MainWindow;
 import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
 import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastDataByte;
+import br.com.davidbuzatto.basicscreenbroadcast.utils.Constants;
 import br.com.davidbuzatto.basicscreenbroadcast.utils.Utils;
 import java.awt.AWTException;
+import java.awt.Color;
 import java.awt.MouseInfo;
 import java.awt.Robot;
 import java.awt.image.BufferedImage;
@@ -46,8 +49,10 @@ public class Server {
     private ExecutorService executorService;
 
     private ObjectOutputStream oos;
+    
+    private MainWindow mainWindow;
 
-    public Server( int port, int fps, List<BroadcastArea> broadcastAreas ) throws AWTException, IOException {
+    public Server( int port, int fps, MainWindow mainWindow, List<BroadcastArea> broadcastAreas ) throws AWTException, IOException {
 
         if ( robot == null ) {
             try {
@@ -59,6 +64,7 @@ public class Server {
         
         this.port = port;
         this.fps = fps;
+        this.mainWindow = mainWindow;
         
         this.clientSockets = Collections.synchronizedList( new ArrayList<Socket>() );
         
@@ -89,9 +95,10 @@ public class Server {
     private void stopServer() {
         try {
             stop();
-        } catch ( IOException exci ) {
-            System.err.println( "Stop server didn't work as intended!" );
-            System.err.println( exci.getMessage() );
+        } catch ( IOException exc ) {
+            Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                    "--- I/O Exception - Stop server didn't work as intended! ---\n", Color.RED );
+            Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
         }
     }
     
@@ -110,16 +117,21 @@ public class Server {
         @Override
         public void run() {
             
-            System.out.println( "Server Connection Thread is Running!" );
+            Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                    "Server Connection Thread is Running!\n", 
+                    Constants.OK_OUTPUT_MESSAGE_COLOR );
             
             while ( running ) {
                 try {
-                    System.out.println( "Server Connection Thread is waiting for a new connection..." );
+                    Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                            "Server Connection Thread is waiting for a new connection...\n", 
+                            Constants.OK_OUTPUT_MESSAGE_COLOR );
                     newClientSocket = serverSocket.accept();
                 } catch ( IOException exc ) {
                     
-                    System.err.println( "Can't accept a new connection!" );
-                    System.err.println( exc.getMessage() );
+                    Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                            "--- I/O Exception - Can't accept a new connection! ---\n", Color.RED );
+                    Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
                     stopServer();
                     
                 }
@@ -140,7 +152,9 @@ public class Server {
         @Override
         public void run() {
 
-            System.out.println( "Server Data Thread is Running!" );
+            Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                    "Server Data Thread is Running!\n", 
+                    Constants.OK_OUTPUT_MESSAGE_COLOR );
             
             while ( running ) {
 
@@ -152,7 +166,9 @@ public class Server {
 
                 for ( Socket cs : clientSockets ) {
                     
-                    //System.out.println( "Sending data to client: " + cs.toString() );
+                    /*Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                            "Sending data to client: \" + cs.toString()", 
+                            Constants.OK_OUTPUT_MESSAGE_COLOR );*/
                     
                     try {
                         
@@ -166,6 +182,8 @@ public class Server {
                                 MouseInfo.getPointerInfo().getLocation() );*/
                         
                         BroadcastDataByte d = new BroadcastDataByte( 
+                                "dataTransfer",
+                                "",
                                 broadcastAreas, 
                                 Utils.bufferedImageListToByteArrayList( imagesToSend ), 
                                 MouseInfo.getPointerInfo().getLocation() );
@@ -175,8 +193,9 @@ public class Server {
                         
                     } catch ( IOException exc ) {
                         
-                        System.err.println( "Can't send data to client." );
-                        System.err.println( exc.getMessage() );
+                        Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                                "--- I/O Exception - Can't send data to client! ---\n", Color.RED );
+                        Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
                         stopServer();
                         
                     }
@@ -191,7 +210,9 @@ public class Server {
                     Thread.sleep( fpsToMilis( fps ) );
                 } catch ( InterruptedException exc ) {
                     
-                    System.err.println( "Can't sleep " + getClass().getName() );
+                    Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                            "--- InterruptedException - Can't sleep! ---\n", Color.RED );
+                    Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
                     stopServer();
                     
                 }

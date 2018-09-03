@@ -10,18 +10,26 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- *
+ * 
  * @author David
  */
 public class BroadcastDataByte implements Serializable {
 
+    private String command;
+    private String commandParams;
+    
     private List<BroadcastArea> broadcastAreas;
     private Point cursorPosition;
     private List<byte[]> images;
 
-    public BroadcastDataByte( List<BroadcastArea> broadcastAreas, 
+    public BroadcastDataByte( 
+            String command,
+            String commandParams,
+            List<BroadcastArea> broadcastAreas, 
             List<byte[]> images, 
             Point cursorPosition ) {
+        this.command = command;
+        this.commandParams = commandParams;
         this.broadcastAreas = broadcastAreas;
         this.images = images;
         this.cursorPosition = cursorPosition;
@@ -49,6 +57,22 @@ public class BroadcastDataByte implements Serializable {
 
     public void setCursorPosition( Point cursorPosition ) {
         this.cursorPosition = cursorPosition;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+
+    public void setCommand( String command ) {
+        this.command = command;
+    }
+
+    public String getCommandParams() {
+        return commandParams;
+    }
+
+    public void setCommandParams( String commandParams ) {
+        this.commandParams = commandParams;
     }
 
 }

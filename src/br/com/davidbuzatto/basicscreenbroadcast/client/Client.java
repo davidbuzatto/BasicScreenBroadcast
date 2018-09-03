@@ -6,9 +6,12 @@
 package br.com.davidbuzatto.basicscreenbroadcast.client;
 
 import br.com.davidbuzatto.basicscreenbroadcast.gui.ImageWindow;
+import br.com.davidbuzatto.basicscreenbroadcast.gui.MainWindow;
 import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
 import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastDataByte;
+import br.com.davidbuzatto.basicscreenbroadcast.utils.Constants;
 import br.com.davidbuzatto.basicscreenbroadcast.utils.Utils;
+import java.awt.Color;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
@@ -36,10 +39,13 @@ public class Client {
     private ServerDataThread clientDataThread;
     private ExecutorService executorService;
 
-    public Client( String host, int port ) throws IOException {
+    private MainWindow mainWindow;
+    
+    public Client( String host, int port, MainWindow mainWindow ) throws IOException {
 
         this.port = port;
         this.host = host;
+        this.mainWindow = mainWindow;
         
         imageWindows = new ArrayList<>();
         
@@ -71,9 +77,10 @@ public class Client {
     private void stopClient() {
         try {
             stop();
-        } catch ( IOException exci ) {
-            System.err.println( "Stop client didn't work as intended!" );
-            System.err.println( exci.getMessage() );
+        } catch ( IOException exc ) {
+            Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                    "--- I/O Exception - Stop client didn't work as intended! ---\n", Color.RED );
+            Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
         }
     }
 
@@ -84,7 +91,9 @@ public class Client {
         @Override
         public void run() {
 
-            System.out.println( "Client Data Thread is Running!" );
+            Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                    "Client Data Thread is Running!\n", 
+                    Constants.OK_OUTPUT_MESSAGE_COLOR );
             
             while ( running ) {
 
@@ -132,10 +141,22 @@ public class Client {
                         i++;
                     }
                     
+                    try {
+                        Thread.sleep( 15 );
+                    } catch ( InterruptedException exc ) {
+
+                        Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                                "--- InterruptedException - Can't sleep! ---\n", Color.RED );
+                        Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
+                        stopClient();
+
+                    }
+                    
                 } catch ( IOException | ClassNotFoundException exc ) {
                     
-                    System.err.println( "Can't read image!" );
-                    System.err.println( exc.getMessage() );
+                    Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                            "--- I/O Exception - Can't read image! ---\n", Color.RED );
+                    Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
                     stopClient();
                     
                 }
