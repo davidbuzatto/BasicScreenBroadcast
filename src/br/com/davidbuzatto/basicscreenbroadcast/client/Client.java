@@ -8,7 +8,7 @@ package br.com.davidbuzatto.basicscreenbroadcast.client;
 import br.com.davidbuzatto.basicscreenbroadcast.gui.ImageWindow;
 import br.com.davidbuzatto.basicscreenbroadcast.gui.MainWindow;
 import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
-import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastDataByte;
+import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastData;
 import br.com.davidbuzatto.basicscreenbroadcast.utils.Constants;
 import br.com.davidbuzatto.basicscreenbroadcast.utils.Utils;
 import java.awt.Color;
@@ -68,6 +68,9 @@ public class Client {
             iw.dispose();
         }
         
+        mainWindow.getBtnClientConnect().setEnabled( true );
+        mainWindow.getBtnClientDisconnect().setEnabled( false );
+                
         clientSocketFromServer.close();
         clientDataThread.stop();
         executorService.shutdown();
@@ -103,42 +106,35 @@ public class Client {
                         ois = new ObjectInputStream( clientSocketFromServer.getInputStream() );
                     }
                     
-                    /*BroadcastData data = (BroadcastData) ois.readObject();
+                    BroadcastData data = (BroadcastData) ois.readObject();
                     
-                    if ( imageWindows.isEmpty() ) {
-                        for ( BroadcastArea ba : data.getBroadcastAreas() ) {
-                            ImageWindow iw = new ImageWindow();
-                            iw.setVisible( true );
-                            imageWindows.add( iw );
-                        }
-                    }
-                    
-                    int i = 0;
-                    for ( ImageWindow iw : imageWindows ) {
-                        iw.setData( 
-                                data.getBroadcastAreas().get( i ), 
-                                data.getImages().get( i ),
-                                data.getCursorPosition() );
-                        i++;
-                    }*/
-                    
-                    BroadcastDataByte data = (BroadcastDataByte) ois.readObject();
-                    
-                    if ( imageWindows.isEmpty() ) {
-                        for ( BroadcastArea ba : data.getBroadcastAreas() ) {
-                            ImageWindow iw = new ImageWindow();
-                            iw.setVisible( true );
-                            iw.setBroadcastArea( ba );
-                            imageWindows.add( iw );
-                        }
-                    }
-                    
-                    int i = 0;
-                    for ( ImageWindow iw : imageWindows ) {
-                        iw.setData(
-                                Utils.byteArrayToBufferedImage( data.getImages().get( i ) ),
-                                data.getCursorPosition() );
-                        i++;
+                    switch ( data.getCommand() ) {
+                        
+                        case "dataTransfer":
+                            
+                            if ( imageWindows.isEmpty() ) {
+                                for ( BroadcastArea ba : data.getBroadcastAreas() ) {
+                                    ImageWindow iw = new ImageWindow();
+                                    iw.setVisible( true );
+                                    iw.setBroadcastArea( ba );
+                                    imageWindows.add( iw );
+                                }
+                            }
+
+                            int i = 0;
+                            for ( ImageWindow iw : imageWindows ) {
+                                iw.setData(
+                                        Utils.byteArrayToBufferedImage( data.getImages().get( i ) ),
+                                        data.getCursorPosition() );
+                                i++;
+                            }
+                            
+                            break;
+                            
+                        default:
+                            System.err.println( "Command " + data.getCommand() + " does not exists!" );
+                            break;
+                        
                     }
                     
                     try {

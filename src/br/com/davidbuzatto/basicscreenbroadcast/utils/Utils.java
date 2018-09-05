@@ -49,11 +49,13 @@ public class Utils {
         List<byte[]> imagesInBytes = new ArrayList<>();
         
         for ( BufferedImage img : imgs ) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write( img, "png", baos );
-            baos.flush();
-            imagesInBytes.add( baos.toByteArray() );
-            baos.close();
+            if ( img != null ) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write( img, "png", baos );
+                baos.flush();
+                imagesInBytes.add( baos.toByteArray() );
+                baos.close();
+            }
         }
         
         return imagesInBytes;

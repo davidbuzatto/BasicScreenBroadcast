@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -456,9 +457,6 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
                 Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
                         "--- Problem in Client Disconnection ---\n", Color.RED );
                 Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
-            } finally {
-                btnClientConnect.setEnabled( true );
-                btnClientDisconnect.setEnabled( false );
             }
         }
 
@@ -548,7 +546,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
             } catch ( IOException exc ) {
                 Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
                         "--- Problem in Server Stop ---\n", Color.RED );
-                 Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
+                Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
             } finally {
                 btnServerStart.setEnabled( true );
                 btnServerStop.setEnabled( false );
@@ -658,6 +656,14 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
 
     public JTextPane getTxtPaneOutputAndError() {
         return txtPaneOutputAndErrors;
+    }
+
+    public JButton getBtnClientConnect() {
+        return btnClientConnect;
+    }
+
+    public JButton getBtnClientDisconnect() {
+        return btnClientDisconnect;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
