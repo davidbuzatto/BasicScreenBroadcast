@@ -32,7 +32,7 @@ public class ImagePanel extends JPanel {
         super.paintComponent( g );
         
         if ( image != null ) {
-            g.drawImage( image, 0, 0, null );
+            g.drawImage( image, 0, 0, getWidth(), getHeight(), null );
         } else {
             g.setColor( Color.WHITE );
             g.drawString( "please wait... starting transmission.", 0, 20 );

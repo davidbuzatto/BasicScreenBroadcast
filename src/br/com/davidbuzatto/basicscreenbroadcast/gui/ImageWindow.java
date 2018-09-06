@@ -6,8 +6,12 @@
 package br.com.davidbuzatto.basicscreenbroadcast.gui;
 
 import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
+import br.com.davidbuzatto.basicscreenbroadcast.utils.Constants;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
@@ -21,12 +25,25 @@ public class ImageWindow extends javax.swing.JFrame {
     private BroadcastArea broadcastArea;
     private int xDiff;
     private int yDiff;
+    private boolean firstSetData;
+    
+    private DragType dragType;
+    
+    private int xStart;
+    private int yStart;
+    private int xEnd;
+    private int yEnd;
     
     /**
      * Creates new form ImageWindow
      */
     public ImageWindow() {
+        
         initComponents();
+        
+        firstSetData = true;
+        dragType = DragType.NONE;
+        
         setUndecorated( true );
     }
 
@@ -41,6 +58,7 @@ public class ImageWindow extends javax.swing.JFrame {
 
         popup = new javax.swing.JPopupMenu();
         itemMinimize = new javax.swing.JMenuItem();
+        itemOriginalSize = new javax.swing.JMenuItem();
         imagePanel = new br.com.davidbuzatto.basicscreenbroadcast.gui.ImagePanel();
 
         popup.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
@@ -54,6 +72,15 @@ public class ImageWindow extends javax.swing.JFrame {
         });
         popup.add(itemMinimize);
 
+        itemOriginalSize.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/arrow_rotate_clockwise.png"))); // NOI18N
+        itemOriginalSize.setText("Restore Original Size");
+        itemOriginalSize.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemOriginalSizeActionPerformed(evt);
+            }
+        });
+        popup.add(itemOriginalSize);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setCursor(new java.awt.Cursor(java.awt.Cursor.MOVE_CURSOR));
         setIconImage(new ImageIcon( getClass().getResource( 
@@ -63,6 +90,9 @@ setResizable(false);
 imagePanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
     public void mouseDragged(java.awt.event.MouseEvent evt) {
         imagePanelMouseDragged(evt);
+    }
+    public void mouseMoved(java.awt.event.MouseEvent evt) {
+        imagePanelMouseMoved(evt);
     }
     });
     imagePanel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -99,14 +129,6 @@ imagePanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
     setBounds(0, 0, 516, 139);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void imagePanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_imagePanelMouseClicked
-        
-        if ( SwingUtilities.isRightMouseButton( evt ) ) {
-            popup.show( (Component) evt.getSource(), evt.getX(), evt.getY() );
-        }
-        
-    }//GEN-LAST:event_imagePanelMouseClicked
-
     private void itemMinimizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemMinimizeActionPerformed
         setExtendedState( ICONIFIED );
     }//GEN-LAST:event_itemMinimizeActionPerformed
@@ -121,10 +143,114 @@ imagePanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
     private void imagePanelMouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_imagePanelMouseDragged
         
         if ( SwingUtilities.isLeftMouseButton( evt ) ) {
-            setLocation( evt.getXOnScreen() - xDiff, evt.getYOnScreen() - yDiff );
+            
+            int xaDraw = getLocation().x;
+            int yaDraw = getLocation().y;
+                        
+            switch ( dragType ) {
+
+                case MOVE:
+                    setLocation( evt.getXOnScreen() - xDiff, evt.getYOnScreen() - yDiff );
+                    break;
+
+                case E_RESIZE:
+                    resizeE( evt );
+                    break;
+
+                case W_RESIZE:
+                    resizeW( evt, xaDraw );
+                    break;
+
+                case S_RESIZE:
+                    resizeS( evt );
+                    break;
+
+                case N_RESIZE:
+                    resizeN( evt, yaDraw );
+                    break;
+
+                case NE_RESIZE:
+                    resizeN( evt, yaDraw );
+                    resizeE( evt );
+                    break;
+
+                case NW_RESIZE:
+                    resizeN( evt, yaDraw );
+                    resizeW( evt, xaDraw );
+                    break;
+
+                case SE_RESIZE:
+                    resizeS( evt );
+                    resizeE( evt );
+                    break;
+
+                case SW_RESIZE:
+                    resizeS( evt );
+                    resizeW( evt, xaDraw );
+                    break;
+
+            }
+
         }
         
     }//GEN-LAST:event_imagePanelMouseDragged
+
+    private void imagePanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_imagePanelMouseClicked
+
+        if ( SwingUtilities.isRightMouseButton( evt ) ) {
+            popup.show( (Component) evt.getSource(), evt.getX(), evt.getY() );
+        }
+
+    }//GEN-LAST:event_imagePanelMouseClicked
+
+    private void imagePanelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_imagePanelMouseMoved
+        
+        dragType = DragType.NONE;
+        Cursor cursor = Constants.MOVE_CURSOR;
+
+        boolean left = evt.getX() <= 10;
+        boolean right = evt.getX() >= getWidth() - 10;
+        boolean top = evt.getY() <= 10;
+        boolean bottom = evt.getY() >= getHeight() - 10;
+
+        if ( left && top ) {
+            cursor = Constants.NW_RESIZE_CURSOR;
+            dragType = DragType.NW_RESIZE;
+        } else if ( left && bottom ) {
+            cursor = Constants.SW_RESIZE_CURSOR;
+            dragType = DragType.SW_RESIZE;
+        } else if ( right && top ) {
+            cursor = Constants.NE_RESIZE_CURSOR;
+            dragType = DragType.NE_RESIZE;
+        } else if ( right && bottom ) {
+            cursor = Constants.SE_RESIZE_CURSOR;
+            dragType = DragType.SE_RESIZE;
+        } else if ( left ) {
+            cursor = Constants.W_RESIZE_CURSOR;
+            dragType = DragType.W_RESIZE;
+        } else if ( right ) {
+            cursor = Constants.E_RESIZE_CURSOR;
+            dragType = DragType.E_RESIZE;
+        } else if ( top ) {
+            cursor = Constants.N_RESIZE_CURSOR;
+            dragType = DragType.N_RESIZE;
+        } else if ( bottom ) {
+            cursor = Constants.S_RESIZE_CURSOR;
+            dragType = DragType.S_RESIZE;
+        } else {
+            cursor = Constants.MOVE_CURSOR;
+            dragType = DragType.MOVE;
+        }
+
+        setCursor( cursor );
+        
+    }//GEN-LAST:event_imagePanelMouseMoved
+
+    private void itemOriginalSizeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemOriginalSizeActionPerformed
+        if ( broadcastArea != null ) {
+            setSize( broadcastArea.getRectangle().getSize() );
+        }
+    }//GEN-LAST:event_itemOriginalSizeActionPerformed
 
     public void setBroadcastArea( BroadcastArea broadcastArea ) {
         this.broadcastArea = broadcastArea;
@@ -133,8 +259,11 @@ imagePanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
     
     public void setData( BufferedImage image, Point cursorPosition ) {
         
-        setSize( broadcastArea.getRectangle().width, broadcastArea.getRectangle().height );
-        setTitle( broadcastArea.getName() );
+        if ( firstSetData ) {
+            setSize( broadcastArea.getRectangle().width, broadcastArea.getRectangle().height );
+            setTitle( broadcastArea.getName() );
+            firstSetData = false;
+        }
         
         Point newPoint = new Point();
         newPoint.x = cursorPosition.x - broadcastArea.getRectangle().x;
@@ -147,9 +276,36 @@ imagePanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
         
     }
     
+    private void resizeE( MouseEvent e ) {
+        if ( e.getXOnScreen() - getLocation().x > 50 ) {
+            setSize( e.getXOnScreen() - getLocation().x, getSize().height );
+        }
+    }
+    
+    private void resizeW( MouseEvent e, int xaDraw ) {
+        if ( getLocation().x + getWidth() - e.getXOnScreen() > 50 ) {
+            setLocation( e.getXOnScreen() - xDiff, getLocation().y );
+            setSize( getSize().width + xaDraw - getLocation().x, getSize().height );
+        }
+    }
+
+    private void resizeS( MouseEvent e ) {
+        if ( e.getYOnScreen()- getLocation().y > 50 ) {
+            setSize( getSize().width, e.getYOnScreen()- getLocation().y );
+        }
+    }
+    
+    private void resizeN( MouseEvent e, int yaDraw ) {
+        if ( getLocation().y + getHeight() - e.getYOnScreen() > 50 ) {
+            setLocation( getLocation().x, e.getYOnScreen() - yDiff );
+            setSize( getSize().width, getSize().height + yaDraw - getLocation().y );
+        }
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private br.com.davidbuzatto.basicscreenbroadcast.gui.ImagePanel imagePanel;
     private javax.swing.JMenuItem itemMinimize;
+    private javax.swing.JMenuItem itemOriginalSize;
     private javax.swing.JPopupMenu popup;
     // End of variables declaration//GEN-END:variables
 }

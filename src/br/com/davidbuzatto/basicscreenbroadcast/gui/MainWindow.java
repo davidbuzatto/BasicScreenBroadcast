@@ -5,24 +5,32 @@
  */
 package br.com.davidbuzatto.basicscreenbroadcast.gui;
 
-import br.com.davidbuzatto.basicscreenbroadcast.client.Client;
+import br.com.davidbuzatto.basicscreenbroadcast.gui.client.Client;
 import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
-import br.com.davidbuzatto.basicscreenbroadcast.server.Server;
+import br.com.davidbuzatto.basicscreenbroadcast.gui.server.Server;
+import br.com.davidbuzatto.basicscreenbroadcast.utils.Constants;
 import br.com.davidbuzatto.basicscreenbroadcast.utils.Utils;
 import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -82,6 +90,9 @@ public class MainWindow extends javax.swing.JFrame {
         btnLoadBroadcastAreas = new javax.swing.JButton();
         btnServerStart = new javax.swing.JButton();
         btnServerStop = new javax.swing.JButton();
+        pnlImageCompression = new javax.swing.JPanel();
+        lblImageCompression = new javax.swing.JLabel();
+        sldImageCompression = new javax.swing.JSlider();
         pnlOutputAndErrors = new javax.swing.JPanel();
         sclOuputAndErrors = new javax.swing.JScrollPane();
         txtPaneOutputAndErrors = new javax.swing.JTextPane();
@@ -148,7 +159,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
             .addComponent(btnClientConnect)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(btnClientDisconnect)
-            .addContainerGap(28, Short.MAX_VALUE))
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
     pnlClientLayout.setVerticalGroup(
         pnlClientLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -211,6 +222,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
     });
 
     btnClearBroadcastAreas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/delete.png"))); // NOI18N
+    btnClearBroadcastAreas.setMnemonic('l');
     btnClearBroadcastAreas.setText("Clear");
     btnClearBroadcastAreas.setEnabled(false);
     btnClearBroadcastAreas.addActionListener(new java.awt.event.ActionListener() {
@@ -230,8 +242,8 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
     });
 
     btnLoadBroadcastAreas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/folder_wrench.png"))); // NOI18N
-    btnLoadBroadcastAreas.setMnemonic('L');
-    btnLoadBroadcastAreas.setText("Load");
+    btnLoadBroadcastAreas.setMnemonic('p');
+    btnLoadBroadcastAreas.setText("Open");
     btnLoadBroadcastAreas.setEnabled(false);
     btnLoadBroadcastAreas.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -246,7 +258,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
         .addGroup(pnlBroascastAreaDefinitionsLayout.createSequentialGroup()
             .addContainerGap()
             .addGroup(pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(sclBroadcastAreaDefinitions, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE)
+                .addComponent(sclBroadcastAreaDefinitions)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlBroascastAreaDefinitionsLayout.createSequentialGroup()
                     .addGap(0, 0, Short.MAX_VALUE)
                     .addComponent(btnEditBroadcastAreas)
@@ -262,7 +274,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
         pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(pnlBroascastAreaDefinitionsLayout.createSequentialGroup()
             .addContainerGap()
-            .addComponent(sclBroadcastAreaDefinitions, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+            .addComponent(sclBroadcastAreaDefinitions, javax.swing.GroupLayout.DEFAULT_SIZE, 170, Short.MAX_VALUE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addGroup(pnlBroascastAreaDefinitionsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(btnEditBroadcastAreas)
@@ -318,6 +330,40 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
         }
     });
 
+    lblImageCompression.setText("<html>Image Compression: <font color='#00FF00'>0%</font></html>");
+
+    sldImageCompression.setMajorTickSpacing(10);
+    sldImageCompression.setMaximum(90);
+    sldImageCompression.setMinorTickSpacing(5);
+    sldImageCompression.setPaintTicks(true);
+    sldImageCompression.setValue(0);
+    sldImageCompression.addChangeListener(new javax.swing.event.ChangeListener() {
+        public void stateChanged(javax.swing.event.ChangeEvent evt) {
+            sldImageCompressionStateChanged(evt);
+        }
+    });
+
+    javax.swing.GroupLayout pnlImageCompressionLayout = new javax.swing.GroupLayout(pnlImageCompression);
+    pnlImageCompression.setLayout(pnlImageCompressionLayout);
+    pnlImageCompressionLayout.setHorizontalGroup(
+        pnlImageCompressionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(pnlImageCompressionLayout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(pnlImageCompressionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(sldImageCompression, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addComponent(lblImageCompression, javax.swing.GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE))
+            .addContainerGap())
+    );
+    pnlImageCompressionLayout.setVerticalGroup(
+        pnlImageCompressionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(pnlImageCompressionLayout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(lblImageCompression, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(sldImageCompression, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+    );
+
     javax.swing.GroupLayout pnlServerLayout = new javax.swing.GroupLayout(pnlServer);
     pnlServer.setLayout(pnlServerLayout);
     pnlServerLayout.setHorizontalGroup(
@@ -338,14 +384,16 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
                     .addComponent(btnServerStart)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(btnServerStop)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(pnlImageCompression, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGap(0, 0, Short.MAX_VALUE)))
             .addContainerGap())
     );
     pnlServerLayout.setVerticalGroup(
         pnlServerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(pnlServerLayout.createSequentialGroup()
-            .addContainerGap()
-            .addGroup(pnlServerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+            .addGroup(pnlServerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                .addComponent(pnlImageCompression, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(lblServerPort)
                 .addComponent(txtServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(lblFPSGeneration)
@@ -353,7 +401,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
                 .addComponent(btnServerStart)
                 .addComponent(btnServerStop))
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(pnlScreenAreas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(pnlScreenAreas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addContainerGap())
     );
 
@@ -382,7 +430,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
         pnlOutputAndErrorsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(pnlOutputAndErrorsLayout.createSequentialGroup()
             .addContainerGap()
-            .addComponent(sclOuputAndErrors, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
+            .addComponent(sclOuputAndErrors, javax.swing.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
             .addContainerGap())
     );
 
@@ -415,23 +463,39 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnClientConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClientConnectActionPerformed
-
+            
         try {
 
+            boolean okToStart = true;
             int port = Integer.parseInt( txtClientPort.getText() );
 
             if ( port < 1 || port > 65535 ) {
                 throw new FieldFormatException( "Port should be in the interval [1; 65535]." );
             }
 
-            client = new Client( txtClientHost.getText(), port, this );
-            client.start();
+            if ( !btnServerStart.isEnabled() ) {
+                okToStart = JOptionPane.showConfirmDialog( 
+                        this, 
+                        "This instance of Basic Screen Broadcast is already\nstarted as a Server!\n\n" +
+                        "Do you really want to connect the Client?", 
+                        "Warning", 
+                        JOptionPane.YES_NO_OPTION, 
+                        JOptionPane.WARNING_MESSAGE ) == JOptionPane.YES_OPTION;
+            }
 
-            btnClientConnect.setEnabled( false );
-            btnClientDisconnect.setEnabled( true );
+            if ( okToStart ) {
+                
+                client = new Client( txtClientHost.getText(), port, this );
+                client.start();
+
+                btnClientConnect.setEnabled( false );
+                btnClientDisconnect.setEnabled( true );
+                
+            }
 
         } catch ( IOException exc ) {
             Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                    "\n--------------------\n" +
                     "--- I/O Exception ---\n", Color.RED );
             Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
         } catch ( NumberFormatException exc ) {
@@ -455,6 +519,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
                 client.stop();
             } catch ( IOException exc ) {
                 Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                        "\n--------------------\n" +
                         "--- Problem in Client Disconnection ---\n", Color.RED );
                 Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
             }
@@ -464,10 +529,9 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
 
     private void btnServerStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnServerStartActionPerformed
 
-        boolean shouldStart = true;
-
         try {
 
+            boolean okToStart = true;
             int port = Integer.parseInt( txtServerPort.getText() );
             int fps = Integer.parseInt( txtFPSGeneration.getText() );
 
@@ -483,10 +547,15 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
 
             if ( radioFullScreen.isSelected() ) {
 
-                /*BroadcastArea b = new BroadcastArea( "Full Screen",
-                        new Rectangle( 300, 300 ) );*/
-                BroadcastArea b = new BroadcastArea( "Full Screen", 
-                        new Rectangle( Toolkit.getDefaultToolkit().getScreenSize() ) );
+                BroadcastArea b;
+                
+                if ( Constants.IN_PRODUCTION ) {
+                    b = new BroadcastArea( "Full Screen", 
+                            new Rectangle( Toolkit.getDefaultToolkit().getScreenSize() ) );
+                } else {
+                    b = new BroadcastArea( "Full Screen",
+                        new Rectangle( 300, 300 ) );
+                }
                
                 startList.add( b );
 
@@ -501,27 +570,49 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
                             this,
                             "You should define at least one Broadcast Area!",
                             "ERROR", JOptionPane.ERROR_MESSAGE );
-                    shouldStart = false;
+                    okToStart = false;
                 }
 
             }
 
-            if ( shouldStart ) {
-                server = new Server( port, fps, this, startList );
+            if ( !btnClientConnect.isEnabled() ) {
+                okToStart = JOptionPane.showConfirmDialog( 
+                        this, 
+                        "This instance of Basic Screen Broadcast is already\nconnected in a Server!\n\n" +
+                        "Do you really want to start the Server?", 
+                        "Warning", 
+                        JOptionPane.YES_NO_OPTION, 
+                        JOptionPane.WARNING_MESSAGE ) == JOptionPane.YES_OPTION;
+            }
+            
+            if ( okToStart ) {
+                
+                server = new Server( 
+                        port, 
+                        fps, 
+                        sldImageCompression.getValue(), 
+                        this, 
+                        startList );
+                
                 server.start();
                 btnServerStart.setEnabled( false );
                 btnServerStop.setEnabled( true );
                 radioFullScreen.setEnabled( false );
                 radioCustomizedBroadscastAreas.setEnabled( false );
+                sldImageCompression.setEnabled( false );
+                
                 enableScreenAreas( false );
+                
             }
 
         } catch ( AWTException exc ) {
             Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                    "\n--------------------\n" +
                     "--- Can't create Robot ---\n", Color.RED );
                 Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
         } catch ( IOException exc ) {
             Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                    "\n--------------------\n" +
                     "--- I/O Exception ---\n", Color.RED );
             Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
         } catch ( NumberFormatException exc ) {
@@ -545,6 +636,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
                 server.stop();
             } catch ( IOException exc ) {
                 Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                        "\n--------------------\n" +
                         "--- Problem in Server Stop ---\n", Color.RED );
                 Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
             } finally {
@@ -552,6 +644,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
                 btnServerStop.setEnabled( false );
                 radioFullScreen.setEnabled( true );
                 radioCustomizedBroadscastAreas.setEnabled( true );
+                sldImageCompression.setEnabled( true );
                 if ( radioFullScreen.isSelected() ) {
                     enableScreenAreas( false );
                 } else {
@@ -579,12 +672,100 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
 
     }//GEN-LAST:event_btnEditBroadcastAreasActionPerformed
 
+    @SuppressWarnings( "unchecked" )
     private void btnLoadBroadcastAreasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadBroadcastAreasActionPerformed
-        // TODO add your handling code here:
+        
+        JFileChooser jfc = new JFileChooser( "./" );
+        jfc.setDialogTitle( "Open Broadcast Area Definitions" );
+        jfc.setMultiSelectionEnabled( false );
+        
+        String ext = "bsbb";
+        
+        jfc.removeChoosableFileFilter( jfc.getFileFilter() );
+        jfc.setFileFilter( new FileNameExtensionFilter( 
+                "Open Broadcast Area Definitions", ext ) );
+        
+        if ( jfc.showOpenDialog( this ) == JFileChooser.APPROVE_OPTION ) {
+            
+            File f = jfc.getSelectedFile();
+            
+            try {
+
+                FileInputStream fis = new FileInputStream( f );
+                ObjectInputStream ois = new ObjectInputStream( fis );
+
+                lstBroadcastAreaDefinitionsModel = (DefaultListModel<BroadcastArea>) ois.readObject();
+                lstBroadcastAreaDefinitions.setModel( lstBroadcastAreaDefinitionsModel );
+                ois.close();
+                fis.close();
+
+            } catch ( IOException exc ) {
+                Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                        "\n--------------------\n" +
+                        "--- I/O Exception ---\n", Color.RED );
+                Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
+            } catch ( ClassNotFoundException exc ) {
+                Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                        "\n--------------------\n" +
+                        "--- Class Not Found Exception ---\n", Color.RED );
+                Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
+            }
+            
+        }
+        
     }//GEN-LAST:event_btnLoadBroadcastAreasActionPerformed
 
     private void btnSaveBroadcastAreasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveBroadcastAreasActionPerformed
-        // TODO add your handling code here:
+        
+        JFileChooser jfc = new JFileChooser( "./" );
+        jfc.setDialogTitle( "Save Broadcast Area Definitions" );
+        jfc.setMultiSelectionEnabled( false );
+        
+        String ext = "bsbb";
+        boolean saveOrOverwrite = true;
+        
+        jfc.removeChoosableFileFilter( jfc.getFileFilter() );
+        jfc.setFileFilter( new FileNameExtensionFilter( 
+                "Save Broadcast Area Definitions", ext ) );
+        
+        if ( jfc.showSaveDialog( this ) == JFileChooser.APPROVE_OPTION ) {
+            
+            File f = jfc.getSelectedFile();
+            if ( !f.getName().endsWith( ext ) ) {
+                f = new File( f.getAbsolutePath() + "." + ext );
+            }
+            
+            if ( f.exists() ) {
+                if ( !(JOptionPane.showConfirmDialog( 
+                        this, 
+                        "The file will be overwrited! Continue?", 
+                        "Confirm Overwrite", JOptionPane.YES_NO_OPTION ) == 
+                        JOptionPane.YES_OPTION ) ) {
+                    saveOrOverwrite = false;
+                }
+            }
+            
+            if ( saveOrOverwrite ) {
+                try {
+                    
+                    FileOutputStream fos = new FileOutputStream( f );
+                    ObjectOutputStream oos = new ObjectOutputStream( fos );
+                    
+                    oos.writeObject( lstBroadcastAreaDefinitionsModel );
+                    oos.flush();
+                    oos.close();
+                    fos.close();
+                    
+                } catch ( IOException exc ) {
+                    Utils.insertFormattedTextJTextPane( txtPaneOutputAndErrors, 
+                            "\n--------------------\n" +
+                            "--- I/O Exception ---\n", Color.RED );
+                    Utils.insertFormattedExceptionTextJTextPane( txtPaneOutputAndErrors, exc, Color.RED );
+                }
+            }
+            
+        }
+        
     }//GEN-LAST:event_btnSaveBroadcastAreasActionPerformed
 
     private void btnClearBroadcastAreasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearBroadcastAreasActionPerformed
@@ -617,6 +798,14 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
         txtPaneOutputAndErrors.setText( "" );
         
     }//GEN-LAST:event_itemClearOutputAndErrorsActionPerformed
+
+    private void sldImageCompressionStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sldImageCompressionStateChanged
+        
+        int value = sldImageCompression.getValue();
+        lblImageCompression.setText( generateImageCompressionLabelText( value ) );
+        System.out.println( sldImageCompression.getValue() );
+        
+    }//GEN-LAST:event_sldImageCompressionStateChanged
 
     public void addBroadcastArea( BroadcastArea area ) {
         lstBroadcastAreaDefinitionsModel.addElement( area );
@@ -666,6 +855,24 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
         return btnClientDisconnect;
     }
 
+    private String generateImageCompressionLabelText( int value ) {
+        
+        String color = "";
+        
+        if ( value <= 20 ) {
+            color = "#00FF00";
+        } else if ( value > 20 && value <= 70 ) {
+            color = "#FF9900";
+        } else {
+            color = "#FF0000";
+        }
+        
+        return String.format( 
+                "<html>Image Compression: <font color='%s'>%d%%</font></html>", 
+                color, value );
+        
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClearBroadcastAreas;
     private javax.swing.JButton btnClientConnect;
@@ -680,10 +887,12 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
     private javax.swing.JLabel lblClientHost;
     private javax.swing.JLabel lblClientPort;
     private javax.swing.JLabel lblFPSGeneration;
+    private javax.swing.JLabel lblImageCompression;
     private javax.swing.JLabel lblServerPort;
     private javax.swing.JList<BroadcastArea> lstBroadcastAreaDefinitions;
     private javax.swing.JPanel pnlBroascastAreaDefinitions;
     private javax.swing.JPanel pnlClient;
+    private javax.swing.JPanel pnlImageCompression;
     private javax.swing.JPanel pnlOutputAndErrors;
     private javax.swing.JPanel pnlScreenAreas;
     private javax.swing.JPanel pnlServer;
@@ -692,6 +901,7 @@ btnClientConnect.addActionListener(new java.awt.event.ActionListener() {
     private javax.swing.JRadioButton radioFullScreen;
     private javax.swing.JScrollPane sclBroadcastAreaDefinitions;
     private javax.swing.JScrollPane sclOuputAndErrors;
+    private javax.swing.JSlider sldImageCompression;
     private javax.swing.JTextField txtClientHost;
     private javax.swing.JTextField txtClientPort;
     private javax.swing.JTextField txtFPSGeneration;

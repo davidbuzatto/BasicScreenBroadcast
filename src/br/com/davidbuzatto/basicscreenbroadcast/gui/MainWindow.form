@@ -103,7 +103,7 @@
                   <Component id="btnClientConnect" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btnClientDisconnect" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="28" max="32767" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -188,7 +188,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Component id="pnlScreenAreas" max="32767" attributes="0"/>
-                      <Group type="102" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
                           <Component id="lblServerPort" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="txtServerPort" min="-2" pref="82" max="-2" attributes="0"/>
@@ -200,6 +200,8 @@
                           <Component id="btnServerStart" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="btnServerStop" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="pnlImageCompression" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -210,17 +212,17 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="lblServerPort" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="txtServerPort" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="lblFPSGeneration" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="txtFPSGeneration" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="btnServerStart" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="btnServerStop" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="2" attributes="0">
+                      <Component id="pnlImageCompression" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblServerPort" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="txtServerPort" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblFPSGeneration" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="txtFPSGeneration" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnServerStart" alignment="2" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnServerStop" alignment="2" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="pnlScreenAreas" max="32767" attributes="0"/>
+                  <Component id="pnlScreenAreas" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -328,7 +330,7 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="sclBroadcastAreaDefinitions" pref="523" max="32767" attributes="0"/>
+                              <Component id="sclBroadcastAreaDefinitions" max="32767" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   <Component id="btnEditBroadcastAreas" min="-2" max="-2" attributes="0"/>
@@ -348,7 +350,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="sclBroadcastAreaDefinitions" pref="187" max="32767" attributes="0"/>
+                          <Component id="sclBroadcastAreaDefinitions" pref="170" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="btnEditBroadcastAreas" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -404,6 +406,7 @@
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                       <Image iconType="3" name="/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/delete.png"/>
                     </Property>
+                    <Property name="mnemonic" type="int" value="108"/>
                     <Property name="text" type="java.lang.String" value="Clear"/>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
@@ -429,8 +432,8 @@
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                       <Image iconType="3" name="/br/com/davidbuzatto/basicscreenbroadcast/gui/icons/folder_wrench.png"/>
                     </Property>
-                    <Property name="mnemonic" type="int" value="76"/>
-                    <Property name="text" type="java.lang.String" value="Load"/>
+                    <Property name="mnemonic" type="int" value="112"/>
+                    <Property name="text" type="java.lang.String" value="Open"/>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
                   <Events>
@@ -466,6 +469,53 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnServerStopActionPerformed"/>
           </Events>
         </Component>
+        <Container class="javax.swing.JPanel" name="pnlImageCompression">
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="sldImageCompression" pref="0" max="32767" attributes="0"/>
+                          <Component id="lblImageCompression" pref="151" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="lblImageCompression" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="sldImageCompression" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="lblImageCompression">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="&lt;html&gt;Image Compression: &lt;font color=&apos;#00FF00&apos;&gt;0%&lt;/font&gt;&lt;/html&gt;"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JSlider" name="sldImageCompression">
+              <Properties>
+                <Property name="majorTickSpacing" type="int" value="10"/>
+                <Property name="maximum" type="int" value="90"/>
+                <Property name="minorTickSpacing" type="int" value="5"/>
+                <Property name="paintTicks" type="boolean" value="true"/>
+                <Property name="value" type="int" value="0"/>
+              </Properties>
+              <Events>
+                <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="sldImageCompressionStateChanged"/>
+              </Events>
+            </Component>
+          </SubComponents>
+        </Container>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPanel" name="pnlOutputAndErrors">
@@ -491,7 +541,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="sclOuputAndErrors" pref="147" max="32767" attributes="0"/>
+                  <Component id="sclOuputAndErrors" pref="166" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>

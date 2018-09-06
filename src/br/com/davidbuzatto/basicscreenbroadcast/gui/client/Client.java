@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.davidbuzatto.basicscreenbroadcast.client;
+package br.com.davidbuzatto.basicscreenbroadcast.gui.client;
 
 import br.com.davidbuzatto.basicscreenbroadcast.gui.ImageWindow;
 import br.com.davidbuzatto.basicscreenbroadcast.gui.MainWindow;
@@ -24,7 +24,9 @@ import java.util.concurrent.TimeUnit;
 import javax.net.SocketFactory;
 
 /**
- *
+ * Warning!
+ * This class is tightly coupled with the MainWindow class.
+ * 
  * @author David
  */
 public class Client {
@@ -32,11 +34,11 @@ public class Client {
     private String host;
     private int port;
     
-    private Socket clientSocketFromServer;
+    private Socket socket;
     private ObjectInputStream ois;
     private List<ImageWindow> imageWindows;
     
-    private ServerDataThread clientDataThread;
+    private ClientDataThread clientDataThread;
     private ExecutorService executorService;
 
     private MainWindow mainWindow;
@@ -49,8 +51,10 @@ public class Client {
         
         imageWindows = new ArrayList<>();
         
-        clientSocketFromServer = SocketFactory.getDefault().createSocket( host, port );
-        clientDataThread = new ServerDataThread();
+        socket = SocketFactory.getDefault().createSocket( host, port );
+        ois = new ObjectInputStream( socket.getInputStream() );
+        
+        clientDataThread = new ClientDataThread();
         executorService = new ThreadPoolExecutor( 1, 1, 1, 
                 TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>( 1 ) );
 
@@ -59,6 +63,17 @@ public class Client {
     public void start() {
         imageWindows.clear();
         executorService.execute( this.clientDataThread );
+    }
+    
+    private void stopClient() {
+        try {
+            stop();
+        } catch ( IOException exc ) {
+            Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                    "\n--------------------\n" +
+                    "CLIENT> --- I/O Exception - Stop client didn't work as intended! ---\n", Color.RED );
+            Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.ORANGE );
+        }
     }
     
     public void stop() throws IOException {
@@ -71,23 +86,15 @@ public class Client {
         mainWindow.getBtnClientConnect().setEnabled( true );
         mainWindow.getBtnClientDisconnect().setEnabled( false );
                 
-        clientSocketFromServer.close();
+        socket.close();
+        ois.close();
+        
         clientDataThread.stop();
         executorService.shutdown();
         
     }
-    
-    private void stopClient() {
-        try {
-            stop();
-        } catch ( IOException exc ) {
-            Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                    "--- I/O Exception - Stop client didn't work as intended! ---\n", Color.RED );
-            Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
-        }
-    }
 
-    private class ServerDataThread implements Runnable {
+    private class ClientDataThread implements Runnable {
 
         private boolean running = true;
 
@@ -95,16 +102,12 @@ public class Client {
         public void run() {
 
             Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                    "Client Data Thread is Running!\n", 
+                    "CLIENT> Client Data Thread is Running!\n", 
                     Constants.OK_OUTPUT_MESSAGE_COLOR );
             
             while ( running ) {
 
                 try {
-                    
-                    if ( ois == null ) {
-                        ois = new ObjectInputStream( clientSocketFromServer.getInputStream() );
-                    }
                     
                     BroadcastData data = (BroadcastData) ois.readObject();
                     
@@ -142,8 +145,9 @@ public class Client {
                     } catch ( InterruptedException exc ) {
 
                         Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                                "--- InterruptedException - Can't sleep! ---\n", Color.RED );
-                        Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
+                                "\n--------------------\n" +
+                                "CLIENT> --- InterruptedException - Can't sleep! ---\n", Color.RED );
+                        Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.ORANGE );
                         stopClient();
 
                     }
@@ -151,8 +155,9 @@ public class Client {
                 } catch ( IOException | ClassNotFoundException exc ) {
                     
                     Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                            "--- I/O Exception - Can't read image! ---\n", Color.RED );
-                    Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
+                            "\n--------------------\n" +
+                            "CLIENT> --- I/O Exception - Can't read image! ---\n", Color.RED );
+                    Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.ORANGE );
                     stopClient();
                     
                 }

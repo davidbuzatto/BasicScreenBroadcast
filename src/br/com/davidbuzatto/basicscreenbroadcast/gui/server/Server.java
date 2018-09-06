@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package br.com.davidbuzatto.basicscreenbroadcast.server;
+package br.com.davidbuzatto.basicscreenbroadcast.gui.server;
 
 import br.com.davidbuzatto.basicscreenbroadcast.gui.MainWindow;
 import br.com.davidbuzatto.basicscreenbroadcast.gui.model.BroadcastArea;
@@ -29,7 +29,9 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ServerSocketFactory;
 
 /**
- *
+ * Warning!
+ * This class is tightly coupled with the MainWindow class.
+ * 
  * @author David
  */
 public class Server {
@@ -37,6 +39,7 @@ public class Server {
     private static Robot robot;
     private int port;
     private int fps;
+    private int imageCompression;
     
     private ServerSocket serverSocket;
     private Socket newClientSocket;
@@ -51,7 +54,7 @@ public class Server {
     
     private MainWindow mainWindow;
 
-    public Server( int port, int fps, MainWindow mainWindow, List<BroadcastArea> broadcastAreas ) throws AWTException, IOException {
+    public Server( int port, int fps, int imageCompression, MainWindow mainWindow, List<BroadcastArea> broadcastAreas ) throws AWTException, IOException {
 
         if ( robot == null ) {
             try {
@@ -63,11 +66,12 @@ public class Server {
         
         this.port = port;
         this.fps = fps;
+        this.imageCompression = imageCompression;
         this.mainWindow = mainWindow;
         
-        this.clientSockets = Collections.synchronizedList( new ArrayList<Socket>() );
-        this.clientOOS = Collections.synchronizedList( new ArrayList<ObjectOutputStream>() );
-        this.broadcastAreas = Collections.synchronizedList( new ArrayList<BroadcastArea>() );
+        this.clientSockets = Collections.synchronizedList( new ArrayList<>() );
+        this.clientOOS = Collections.synchronizedList( new ArrayList<>() );
+        this.broadcastAreas = Collections.synchronizedList( new ArrayList<>() );
         setBroadcastAreas( broadcastAreas );
 
         this.serverSocket = ServerSocketFactory.getDefault().createServerSocket( port );
@@ -77,20 +81,37 @@ public class Server {
         
         this.executorService = new ThreadPoolExecutor( 10, 10, 1, 
                 TimeUnit.SECONDS, 
-                new ArrayBlockingQueue<Runnable>( 10 ) );
+                new ArrayBlockingQueue<>( 10 ) );
 
     }
 
     public void start() {
-        executorService.execute( this.serverConnectionThread );
-        executorService.execute( this.serverDataThread );
+        executorService.execute( serverConnectionThread );
+        executorService.execute( serverDataThread );
     }
     
     public void stop() throws IOException {
+        
         serverSocket.close();
+        
+        synchronized ( clientSockets ) {
+                
+            int clientIndex = 0;
+            for ( Socket cs : clientSockets ) {
+                clientOOS.get( clientIndex ).close();
+                cs.close();
+                clientIndex++;
+            }
+
+            clientSockets.clear();
+            clientOOS.clear();
+
+        }
+        
         serverConnectionThread.stop();
         serverDataThread.stop();
         executorService.shutdown();
+        
     }
     
     private void stopServer() {
@@ -98,8 +119,9 @@ public class Server {
             stop();
         } catch ( IOException exc ) {
             Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                    "--- I/O Exception - Stop server didn't work as intended! ---\n", Color.RED );
-            Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
+                    "\n--------------------\n" +
+                    "SERVER> --- I/O Exception - Stop server didn't work as intended! ---\n", Color.RED );
+            Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.ORANGE );
         }
     }
     
@@ -119,23 +141,37 @@ public class Server {
         public void run() {
             
             Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                    "Server Connection Thread is Running!\n", 
+                    "SERVER> Server Connection Thread is Running!\n", 
                     Constants.OK_OUTPUT_MESSAGE_COLOR );
             
             while ( running ) {
+                
                 try {
+                    
                     Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                            "Server Connection Thread is waiting for a new connection...\n", 
+                            "SERVER> Server Connection Thread is waiting for a new connection...\n", 
                             Constants.OK_OUTPUT_MESSAGE_COLOR );
+                    
                     newClientSocket = serverSocket.accept();
+                    
+                    Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                            "SERVER> Client connected: ", 
+                            Constants.OK_OUTPUT_MESSAGE_COLOR );
+                    
+                    Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
+                            "<" + newClientSocket.toString() + ">\n", 
+                            Color.MAGENTA.darker() );
+                    
                 } catch ( IOException exc ) {
                     
                     Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                            "--- I/O Exception - Can't accept a new connection! ---\n", Color.RED );
-                    Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
+                            "\n--------------------\n" +
+                            "SERVER> --- I/O Exception - Can't accept a new connection! ---\n", Color.RED );
+                    Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.ORANGE );
                     stopServer();
                     
                 }
+                
             }
             
         }
@@ -155,7 +191,7 @@ public class Server {
         public void run() {
             
             Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                    "Server Data Thread is Running!\n", 
+                    "SERVER> Server Data Thread is Running!\n", 
                     Constants.OK_OUTPUT_MESSAGE_COLOR );
             
             while ( running ) {
@@ -185,7 +221,10 @@ public class Server {
                                     "dataTransfer",
                                     "",
                                     broadcastAreas, 
-                                    Utils.bufferedImageListToByteArrayList( imagesToSend ), 
+                                    Utils.bufferedImageListToByteArrayList( 
+                                            imagesToSend,
+                                            imageCompression == 0 ? "png" : "jpg", 
+                                            100 - imageCompression ), 
                                     MouseInfo.getPointerInfo().getLocation() );
 
                             oos.writeObject( d );
@@ -195,11 +234,13 @@ public class Server {
                         } catch ( IOException exc ) {
 
                             Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                                    "--- I/O Exception - Can't send data to client! ---\n", Color.RED );
-                            Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
+                                    "\n--------------------\n" +
+                                    "SERVER> --- I/O Exception - Can't send data to client! ---\n", Color.RED );
+                            Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.ORANGE );
 
                             Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                                    "--- Client will be disconnected! ---\n", Color.RED );
+                                    "\n--------------------\n" +
+                                    "SERVER> --- Client will be disconnected! ---\n", Color.RED );
 
                             removeClient = true;
 
@@ -221,9 +262,10 @@ public class Server {
                     } catch ( IOException exc ) {
 
                         Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                                "--- InterruptedException - Can't get client streams! ---\n", Color.RED );
-                        Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
-                        //stopServer();
+                                "\n--------------------\n" +
+                                "SERVER> --- InterruptedException - Can't get client streams! ---\n", Color.RED );
+                        Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.ORANGE);
+                        stopServer();
 
                     }
                 
@@ -234,8 +276,9 @@ public class Server {
                 } catch ( InterruptedException exc ) {
                     
                     Utils.insertFormattedTextJTextPane( mainWindow.getTxtPaneOutputAndError(), 
-                            "--- InterruptedException - Can't sleep! ---\n", Color.RED );
-                    Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.RED );
+                            "\n--------------------\n" +
+                            "SERVER> --- InterruptedException - Can't sleep! ---\n", Color.RED );
+                    Utils.insertFormattedExceptionTextJTextPane( mainWindow.getTxtPaneOutputAndError(), exc, Color.ORANGE );
                     stopServer();
                     
                 }
@@ -248,24 +291,8 @@ public class Server {
             return 1000L / fps;
         }
         
-        public void stop() throws IOException {
-            
+        public void stop() {
             running = false;
-            
-            synchronized ( clientSockets ) {
-                
-                int clientIndex = 0;
-                for ( Socket cs : clientSockets ) {
-                    clientOOS.get( clientIndex ).close();
-                    cs.close();
-                    clientIndex++;
-                }
-
-                clientSockets.clear();
-                clientOOS.clear();
-                
-            }
-            
         }
 
     }

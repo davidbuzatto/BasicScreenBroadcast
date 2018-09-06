@@ -17,6 +17,8 @@ import java.awt.FontMetrics;
  */
 public class Constants {
     
+    public static final boolean IN_PRODUCTION = true;
+    
     public static final Cursor CROSSHAIR_CURSOR = new Cursor( Cursor.CROSSHAIR_CURSOR );
     public static final Cursor MOVE_CURSOR = new Cursor( Cursor.MOVE_CURSOR );
     public static final Cursor E_RESIZE_CURSOR = new Cursor( Cursor.E_RESIZE_CURSOR );
